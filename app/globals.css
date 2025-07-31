@@ -1,0 +1,233 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #56ec6a;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4ade80;
+}
+
+/* Custom glitch animation */
+@keyframes glitch-text {
+  0% {
+    text-shadow: 
+      0.05em 0 0 #00ff88,
+      -0.05em -0.025em 0 #9945ff,
+      0.025em 0.05em 0 #ff0050;
+  }
+  15% {
+    text-shadow: 
+      0.05em 0 0 #00ff88,
+      -0.05em -0.025em 0 #9945ff,
+      0.025em 0.05em 0 #ff0050;
+  }
+  16% {
+    text-shadow: 
+      -0.05em -0.025em 0 #00ff88,
+      0.025em 0.025em 0 #9945ff,
+      -0.05em -0.05em 0 #ff0050;
+  }
+  49% {
+    text-shadow: 
+      -0.05em -0.025em 0 #00ff88,
+      0.025em 0.025em 0 #9945ff,
+      -0.05em -0.05em 0 #ff0050;
+  }
+  50% {
+    text-shadow: 
+      0.025em 0.05em 0 #00ff88,
+      0.05em 0 0 #9945ff,
+      0 -0.05em 0 #ff0050;
+  }
+  99% {
+    text-shadow: 
+      0.025em 0.05em 0 #00ff88,
+      0.05em 0 0 #9945ff,
+      0 -0.05em 0 #ff0050;
+  }
+  100% {
+    text-shadow: 
+      0.05em 0 0 #00ff88,
+      -0.05em -0.025em 0 #9945ff,
+      0.025em 0.05em 0 #ff0050;
+  }
+}
+
+.glitch-text {
+  animation: glitch-text 0.5s ease-in-out infinite alternate;
+}
+
+/* Terminal cursor blink */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.terminal-cursor::after {
+  content: '█';
+  animation: blink 1s infinite;
+  color: #00ff88;
+}
+
+/* Matrix rain effect */
+@keyframes matrix-rain {
+  0% { transform: translateY(-100vh); }
+  100% { transform: translateY(100vh); }
+}
+
+.matrix-rain {
+  animation: matrix-rain 10s linear infinite;
+}
+
+/* Neon glow effects */
+.neon-green {
+  box-shadow: 
+    0 0 5px #00ff88,
+    0 0 10px #00ff88,
+    0 0 15px #00ff88,
+    0 0 20px #00ff88;
+}
+
+.neon-purple {
+  box-shadow: 
+    0 0 5px #9945ff,
+    0 0 10px #9945ff,
+    0 0 15px #9945ff,
+    0 0 20px #9945ff;
+}
+
+.neon-red {
+  box-shadow: 
+    0 0 5px #ff0050,
+    0 0 10px #ff0050,
+    0 0 15px #ff0050,
+    0 0 20px #ff0050;
+}
+
+/* Button hover effects */
+.btn-degen {
+  @apply bg-degen-green text-black font-bold py-2 px-4 rounded-lg transition-all duration-200;
+}
+
+.btn-degen:hover {
+  @apply bg-green-400 transform scale-105;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+}
+
+.btn-danger {
+  @apply bg-rug-red text-white font-bold py-2 px-4 rounded-lg transition-all duration-200;
+}
+
+.btn-danger:hover {
+  @apply bg-red-600 transform scale-105;
+  box-shadow: 0 0 20px rgba(255, 0, 80, 0.5);
+}
+
+/* Loading animations */
+.loading-dots::after {
+  content: '';
+  animation: loading-dots 1.5s steps(5, end) infinite;
+}
+
+@keyframes loading-dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60% { content: '...'; }
+  80%, 100% { content: ''; }
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .text-responsive-lg {
+    @apply text-2xl;
+  }
+  
+  .text-responsive-xl {
+    @apply text-3xl;
+  }
+}
+
+/* Custom utilities */
+.text-shadow-glow {
+  text-shadow: 0 0 10px currentColor;
+}
+
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(rgba(0, 255, 136, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 136, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Hide default number input arrows */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Selection color */
+::selection {
+  background-color: #56ec6a;
+  color: #1f2937;
+}
+
+::-moz-selection {
+  background-color: #56ec6a;
+  color: #1f2937;
+}
+
+/* Base styles for the new design */
+body {
+  font-family: 'Inter', 'Helvetica', 'Arial', sans-serif;
+  background-color: #ffffff;
+  color: #1f2937;
+}
+
+/* Clean button styles */
+.btn-primary {
+  @apply bg-primary-500 hover:bg-primary-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
+}
+
+.btn-outline {
+  @apply border-2 border-primary-500 text-primary-600 hover:bg-primary-500 hover:text-white font-medium py-3 px-6 rounded-lg transition-all duration-200;
+}
+
+/* Card styles */
+.card {
+  @apply bg-white rounded-xl shadow-lg border border-gray-100 p-6;
+}
+
+/* Gecko-specific animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Lottery glow effect */
+.lottery-glow {
+  box-shadow: 0 0 20px rgba(86, 236, 106, 0.3);
+}

@@ -1,0 +1,44 @@
+{
+  "totalSupply": 2222,
+  "availableGeckos": 2221,
+  "imagesUploaded": 2221,
+  "metadataUploaded": 2222,
+  "lastUpdated": "2025-07-30T05:27:46.104Z",
+  "sampleGeckos": [
+    {
+      "id": 0,
+      "name": "Greedy Gecko #0",
+      "image": "https://gateway.pinata.cloud/ipfs/QmcMWA4aCYjgPKLkpo8vgLGZCxRgYYJxA2JLR5su5mTMaR",
+      "metadata": "https://gateway.pinata.cloud/ipfs/QmXGAFkZmvGXP1rkFxKiRkJi13CEKB7tX88k3XQP7CMcsx",
+      "available": true
+    },
+    {
+      "id": 1,
+      "name": "Greedy Gecko #1",
+      "image": "https://gateway.pinata.cloud/ipfs/QmYmLz5PB9VunFYeQmRVfnyJhW4ZkHDKnifZxT1xAoSzpc",
+      "metadata": "https://gateway.pinata.cloud/ipfs/QmRhQJXPfGid9gbqcDKYu4axH4WAGD3R83NEvig7FGhkc5",
+      "available": true
+    },
+    {
+      "id": 2,
+      "name": "Greedy Gecko #2",
+      "image": "https://gateway.pinata.cloud/ipfs/QmTb1a9bbnBU86c99LATyN1KRmyWpkxm8vdoLfjo88i6fR",
+      "metadata": "https://gateway.pinata.cloud/ipfs/QmPFYJuWtG3QEDzbA368aMk7LJnay6cA5tVQzxYgVtdaTS",
+      "available": true
+    },
+    {
+      "id": 3,
+      "name": "Greedy Gecko #3",
+      "image": "https://gateway.pinata.cloud/ipfs/QmR2CYCGbXypexA3w5NkCwwmHqTwZAkSyortdh1HDQ33uC",
+      "metadata": "https://gateway.pinata.cloud/ipfs/QmRzqp5qw5phzgyT3sEQSCvxFP16UF9BFqVVEhjz7bLpqe",
+      "available": true
+    },
+    {
+      "id": 4,
+      "name": "Greedy Gecko #4",
+      "image": "https://gateway.pinata.cloud/ipfs/QmTKvVi9DEDVtBb8ijQ91ecnaZL456QSXbKJvMKwdfbsjG",
+      "metadata": "https://gateway.pinata.cloud/ipfs/QmS8NxqscNroUySW1bWJQ5XmpPCCebUcEuKa6W3bm6TEhC",
+      "available": true
+    }
+  ]
+}

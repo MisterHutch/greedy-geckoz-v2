@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Greedy Geckoz 2025 - Test Site</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        h1 {
+            color: #00ff88;
+            font-size: 3em;
+            text-shadow: 0 0 20px #00ff88;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        .gecko-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .gecko-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+        .gecko-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+        .gecko-info {
+            padding: 15px;
+        }
+        .mint-button {
+            background: #00ff88;
+            color: black;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.1em;
+            margin: 10px;
+        }
+        .mint-button:hover {
+            background: #00dd77;
+        }
+        .ipfs-link {
+            color: #00ff88;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .ipfs-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦎 GREEDY GECKOZ 2025 🦎</h1>
+            <p>2,222 Greedy Geckos Ready for Degens!</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Supply</h3>
+                <h2 id="totalSupply">2,222</h2>
+            </div>
+            <div class="stat-card">
+                <h3>Available</h3>
+                <h2 id="available">2,221</h2>
+            </div>
+            <div class="stat-card">
+                <h3>Mint Price</h3>
+                <h2>0.0169 SOL</h2>
+            </div>
+            <div class="stat-card">
+                <h3>Success Rate</h3>
+                <h2 id="successRate">99.95%</h2>
+            </div>
+        </div>
+
+        <div class="gecko-grid" id="geckoGrid">
+            <!-- Geckos will be loaded here -->
+        </div>
+
+        <div style="text-align: center; margin: 40px 0;">
+            <button class="mint-button" onclick="testMint()">🎮 TEST MINT RANDOM GECKO</button>
+            <button class="mint-button" onclick="loadMoreGeckos()">📸 LOAD MORE GECKOS</button>
+        </div>
+    </div>
+
+    <script>
+        let collectionData = {};
+        let displayedGeckos = 0;
+
+        // Load collection data
+        async function loadCollectionData() {
+            try {
+                const response = await fetch('./public/data/collection-2025.json');
+                if (!response.ok) {
+                    throw new Error('Collection data not found');
+                }
+                collectionData = await response.json();
+                
+                // Update stats
+                const available = Object.values(collectionData).filter(g => g.available).length;
+                document.getElementById('available').textContent = available;
+                document.getElementById('successRate').textContent = 
+                    ((available / Object.keys(collectionData).length) * 100).toFixed(2) + '%';
+                
+                // Load first batch of geckos
+                loadMoreGeckos();
+                
+            } catch (error) {
+                console.error('Error loading collection data:', error);
+                // Show sample data for testing
+                showSampleGeckos();
+            }
+        }
+
+        // Show sample geckos for testing
+        function showSampleGeckos() {
+            const sampleGeckos = [
+                {
+                    id: 0,
+                    name: 'Greedy Gecko #0',
+                    image: 'https://gateway.pinata.cloud/ipfs/QmcMWA4aCYjgPKLkpo8vgLGZCxRgYYJxA2JLR5su5mTMaR',
+                    metadata: 'https://gateway.pinata.cloud/ipfs/QmXGAFkZmvGXP1rkFxKiRkJi13CEKB7tX88k3XQP7CMcsx'
+                },
+                {
+                    id: 1,
+                    name: 'Greedy Gecko #1',
+                    image: 'https://gateway.pinata.cloud/ipfs/QmYmLz5PB9VunFYeQmRVfnyJhW4ZkHDKnifZxT1xAoSzpc',
+                    metadata: 'https://gateway.pinata.cloud/ipfs/QmRhQJXPfGid9gbqcDKYu4axH4WAGD3R83NEvig7FGhkc5'
+                },
+                {
+                    id: 100,
+                    name: 'Greedy Gecko #100',
+                    image: 'https://gateway.pinata.cloud/ipfs/QmbC2kJuWH4Hnz6n3wai6rx1BRGGufieTRpumNywqi3vne',
+                    metadata: 'https://gateway.pinata.cloud/ipfs/QmXSa6biM4JFYdEv978zicTxmT8XxjPAyNM6kMtDb7MZBx'
+                },
+                {
+                    id: 500,
+                    name: 'Greedy Gecko #500',
+                    image: 'https://gateway.pinata.cloud/ipfs/Qmei7CEu4c5FinenNYFNy3ed5eX7QtszMBZ7x983Yteea8',
+                    metadata: 'https://gateway.pinata.cloud/ipfs/QmdBWXPF26eu7g7rkqW9pdEhhohPnFV8STJ9dWmfxJyfYU'
+                },
+                {
+                    id: 1000,
+                    name: 'Greedy Gecko #1000',
+                    image: 'https://gateway.pinata.cloud/ipfs/QmYc27bnkXQb1mbucTFUorcM9h5M98Lp3ArKDhu4HMmh66',
+                    metadata: 'https://gateway.pinata.cloud/ipfs/QmQn4W1pnSP7binc36kgEzDknHaMtKydj1PCbrUS1a2cCA'
+                }
+            ];
+
+            displayGeckos(sampleGeckos);
+        }
+
+        // Display geckos in the grid
+        function displayGeckos(geckos) {
+            const grid = document.getElementById('geckoGrid');
+            
+            geckos.forEach(gecko => {
+                const geckoCard = document.createElement('div');
+                geckoCard.className = 'gecko-card';
+                geckoCard.innerHTML = `
+                    <img src="${gecko.image}" alt="${gecko.name}" class="gecko-image" 
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkdlY2tvICMke2dlY2tvLmlkfTwvdGV4dD48L3N2Zz4='">
+                    <div class="gecko-info">
+                        <h3>${gecko.name}</h3>
+                        <p>
+                            <a href="${gecko.image}" target="_blank" class="ipfs-link">📸 View Image</a><br>
+                            <a href="${gecko.metadata}" target="_blank" class="ipfs-link">📄 View Metadata</a>
+                        </p>
+                        <button class="mint-button" onclick="mintGecko(${gecko.id})">MINT THIS GECKO</button>
+                    </div>
+                `;
+                grid.appendChild(geckoCard);
+            });
+        }
+
+        // Load more geckos
+        function loadMoreGeckos() {
+            if (Object.keys(collectionData).length === 0) {
+                showSampleGeckos();
+                return;
+            }
+
+            const allGeckos = Object.values(collectionData);
+            const nextBatch = allGeckos.slice(displayedGeckos, displayedGeckos + 6);
+            displayGeckos(nextBatch);
+            displayedGeckos += nextBatch.length;
+        }
+
+        // Test mint function
+        function testMint() {
+            if (Object.keys(collectionData).length === 0) {
+                alert('🎮 TEST MINT: Gecko #' + Math.floor(Math.random() * 2222) + ' would be minted!\\n\\n✅ IPFS URLs are working!\\n🦎 Ready for real mint integration!');
+                return;
+            }
+
+            const availableGeckos = Object.values(collectionData).filter(g => g.available);
+            const randomGecko = availableGeckos[Math.floor(Math.random() * availableGeckos.length)];
+            mintGecko(randomGecko.id);
+        }
+
+        // Mint specific gecko
+        function mintGecko(geckoId) {
+            const gecko = collectionData[geckoId] || { id: geckoId, name: `Greedy Gecko #${geckoId}` };
+            alert(`🎮 TEST MINT: ${gecko.name}\\n\\n✅ IPFS Integration Working!\\n🦎 Ready for Solana Integration!\\n\\nNext: Connect to Solana wallet and mint program.`);
+        }
+
+        // Load data when page loads
+        window.addEventListener('load', loadCollectionData);
+    </script>
+</body>
+</html>

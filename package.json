@@ -1,0 +1,47 @@
+{
+  "name": "greedy-geckoz-refresh",
+  "version": "1.0.0",
+  "description": "Degen paradise design refresh for Greedy Geckoz",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build", 
+    "start": "next start",
+    "lint": "next lint",
+    "upload-geckos": "ts-node scripts/upload-geckos.ts",
+    "test-upload": "ts-node scripts/test-upload.ts"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "@solana/web3.js": "^1.87.6",
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-react-ui": "^0.9.34",
+    "@solana/wallet-adapter-wallets": "^0.19.32",
+    "@solana/spl-token": "^0.3.9",
+    "@metaplex-foundation/mpl-token-metadata": "^3.2.1",
+    "framer-motion": "^10.16.5",
+    "socket.io-client": "^4.7.4",
+    "tailwindcss": "^3.3.6",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "lucide-react": "^0.294.0",
+    "react-hot-toast": "^2.4.1",
+    "axios": "^1.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.9.0",
+    "@types/react": "^18.2.37",
+    "typescript": "^5.2.2",
+    "eslint": "^8.54.0",
+    "eslint-config-next": "^14.0.0",
+    "ts-node": "^10.9.1",
+    "dotenv": "^16.3.1",
+    "form-data": "^4.0.0"
+  },
+  "keywords": ["solana", "nft", "degen", "community", "geckoz"],
+  "author": "Degen Developers",
+  "license": "MIT"
+}
