@@ -4,7 +4,6 @@
 
 Place your 5000 Gecko assets in these locations:
 
-```
 greedy-geckoz-refresh/
 ├── assets/
 │   ├── images/           👈 PUT YOUR PNG FILES HERE
@@ -18,7 +17,7 @@ greedy-geckoz-refresh/
 │       ├── 3.json
 │       └── ... (up to 5000.json)
 └── public/assets/images/ 👈 ALTERNATIVE: For direct web access
-```
+
 
 ## 🎯 **Option 1: Local Asset Upload (Recommended)**
 
