@@ -13,6 +13,7 @@ export default function Header() {
     { label: 'Lottery', href: '#lottery' },
     { label: 'Collection', href: '#collection' },
     { label: 'Portfolio Tracker', href: '/dashboard' },
+    { label: 'Fluid Playground', href: '/playground' },
     { label: 'Team', href: '#team' },
   ]
 
