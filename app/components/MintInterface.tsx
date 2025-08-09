@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useWallet } from '@solana/wallet-adapter-react'
+// Mock wallet hook for demo purposes
+const useWallet = () => ({
+  publicKey: null,
+  connected: false,
+  signTransaction: null
+})
 import { Connection, LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { Trophy, Zap, Clock, DollarSign, Users, Wallet, ExternalLink } from 'lucide-react'
 import { GeckoMintProgram, MINT_CONFIG, validateMintConditions } from '../../lib/solana/mint-program'
@@ -11,7 +16,8 @@ interface MintInterfaceProps {
   mintStats: {
     totalMinted: number
     totalSupply: number
-    nextLotteryAt: number
+    lotteryWinnersCount: number
+    lotteryWinnersRemaining: number
     lotteryPool: number
   }
 }
@@ -25,8 +31,8 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
   const [mintProgram, setMintProgram] = useState<GeckoMintProgram | null>(null)
   const [quantity, setQuantity] = useState(1)
 
-  const mintsUntilLottery = mintStats.nextLotteryAt - (mintStats.totalMinted % mintStats.nextLotteryAt)
-  const lotteryProgress = ((mintStats.totalMinted % mintStats.nextLotteryAt) / mintStats.nextLotteryAt) * 100
+  const lotteryWinnersLeft = mintStats.lotteryWinnersRemaining
+  const lotteryProgress = ((5 - lotteryWinnersLeft) / 5) * 100
 
   // Initialize connection and program
   useEffect(() => {
@@ -58,7 +64,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
       return
     }
 
-    const validation = validateMintConditions(mintStats.totalMinted, userBalance)
+    const validation = validateMintConditions(mintStats.totalMinted, userBalance, quantity)
     if (!validation.canMint) {
       alert(validation.reason)
       return
@@ -160,10 +166,10 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
         {/* Header */}
         <div className="text-center mb-8">
           <h3 className="text-2xl font-bold text-gray-900 mb-2">
-            Ready to Join the Gecko Gang?
+            Ready to Buy a JPEG and Call Yourself an Investor?
           </h3>
           <p className="text-gray-600">
-            Mint your entrepreneurial gecko and potentially win the lottery!
+            Mint your gecko and maybe win some SOL back (because let's face it, you need it).
           </p>
         </div>
 
@@ -196,18 +202,18 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
           <div className="text-center p-4 bg-accent-50 rounded-lg">
             <Clock className="w-6 h-6 text-accent-500 mx-auto mb-2" />
             <div className="text-lg font-bold text-accent-600">
-              {mintsUntilLottery}
+              {lotteryWinnersLeft}
             </div>
-            <div className="text-sm text-gray-600">Until Lottery</div>
+            <div className="text-sm text-gray-600">Winners Left</div>
           </div>
         </div>
 
         {/* Lottery Progress */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-3">
-            <span className="text-sm font-medium text-gray-700">Lottery Progress</span>
+            <span className="text-sm font-medium text-gray-700">Lottery Winners Found</span>
             <span className="text-sm font-bold text-primary-600">
-              {Math.round(lotteryProgress)}%
+              {5 - lotteryWinnersLeft}/5 winners
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3">
@@ -219,15 +225,15 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
             />
           </div>
           <div className="flex justify-between text-xs text-gray-600 mt-2">
-            <span>{mintStats.totalMinted % mintStats.nextLotteryAt} / {mintStats.nextLotteryAt} mints</span>
-            <span>{mintsUntilLottery} remaining</span>
+            <span>{lotteryWinnersLeft > 0 ? "Still accepting applications" : "All winners found (sorry!)"}</span>
+            <span>{lotteryWinnersLeft} spots left</span>
           </div>
         </div>
 
         {/* Quantity Selector */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-3">
-            Quantity (Max 10)
+            How Many Bad Decisions? (Max 10)
           </label>
           <div className="flex items-center justify-center space-x-4">
             <button
@@ -256,17 +262,17 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
           {!connected ? (
             <div className="p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
               <Wallet className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-600 mb-4">Connect your wallet to start minting</p>
-              <button className="btn-outline">Connect Wallet</button>
+              <p className="text-gray-600 mb-4">Connect your wallet to make questionable financial decisions</p>
+              <button className="btn-outline">Connect Wallet (Do It)</button>
             </div>
           ) : soldOut ? (
             <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-              <p className="text-red-700 font-bold">SOLD OUT! All 2,222 Geckos have been claimed 🦎</p>
+              <p className="text-red-700 font-bold">SOLD OUT! All 2,222 overpriced JPEGs have found new homes 🦎 (You snooze, you lose!)</p>
             </div>
           ) : (
             <div className="space-y-4">
               <div className="text-sm text-gray-600">
-                Your balance: {userBalance.toFixed(4)} SOL
+                Your balance: {userBalance.toFixed(4)} SOL (not much, but we'll take it)
               </div>
               
               <motion.button
@@ -290,14 +296,14 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                 ) : (
                   <div className="flex items-center justify-center space-x-2">
                     <span>🦎</span>
-                    <span>Mint {quantity} Gecko{quantity > 1 ? 's' : ''}</span>
+                    <span>Buy {quantity} Overpriced JPEG{quantity > 1 ? 's' : ''}</span>
                   </div>
                 )}
               </motion.button>
 
               {!canAfford && connected && (
                 <p className="text-red-600 text-sm">
-                  You need {(totalCost - userBalance).toFixed(4)} more SOL
+                  You need {(totalCost - userBalance).toFixed(4)} more SOL (time to sell something?)
                 </p>
               )}
             </div>
@@ -305,7 +311,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
         </div>
 
         {/* Lottery Alert */}
-        {mintsUntilLottery <= 20 && !soldOut && (
+        {lotteryWinnersLeft > 0 && !soldOut && (
           <motion.div
             className="p-4 bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200 rounded-lg"
             animate={{ scale: [1, 1.02, 1] }}
@@ -314,7 +320,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
             <div className="flex items-center justify-center space-x-2 text-primary-700">
               <Zap className="w-5 h-5" />
               <span className="font-bold">
-                🚨 LOTTERY ALERT: Only {mintsUntilLottery} mints until someone wins ~{mintStats.lotteryPool} SOL!
+                🚨 LOTTERY ALERT: {lotteryWinnersLeft} more winners can still win ~{mintStats.lotteryPool} SOL each! (Could be you... probably not, but could be!)
               </span>
             </div>
           </motion.div>

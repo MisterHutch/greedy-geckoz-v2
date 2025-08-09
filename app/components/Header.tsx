@@ -12,6 +12,7 @@ export default function Header() {
     { label: 'Mint', href: '#mint' },
     { label: 'Lottery', href: '#lottery' },
     { label: 'Collection', href: '#collection' },
+    { label: 'Portfolio Tracker', href: '/dashboard' },
     { label: 'Team', href: '#team' },
   ]
 
@@ -30,7 +31,7 @@ export default function Header() {
             </motion.div>
             <div>
               <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-                Greedy Geckoz
+                Geckoz
               </h1>
               <p className="text-xs text-primary-600 font-medium">
                 Greed is Good

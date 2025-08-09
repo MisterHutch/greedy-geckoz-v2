@@ -15,20 +15,20 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Greedy Geckoz - Degen Paradise | Where Lambos Go to Die',
-  description: 'The ultimate Solana NFT community for degenerates. Join 3,500 Greedy Geckoz holders in the cope cave. Mint your mistakes, embrace the chaos.',
+  title: 'Geckoz - Degen Paradise | Where Lambos Go to Die',
+  description: 'The ultimate Solana NFT community for degenerates. Join 3,500 Geckoz holders in the cope cave. Mint your mistakes, embrace the chaos.',
   keywords: ['Solana', 'NFT', 'Degen', 'Crypto', 'Geckoz', 'Community', 'Memes'],
-  authors: [{ name: 'Greedy Geckoz Team' }],
+  authors: [{ name: 'Geckoz Team' }],
   openGraph: {
-    title: 'Greedy Geckoz - Degen Paradise',
+    title: 'Geckoz - Degen Paradise',
     description: 'Where degenerates gather to lose money together. 3,500 unique Geckoz on Solana.',
     type: 'website',
     locale: 'en_US',
-    siteName: 'Greedy Geckoz',
+    siteName: 'Geckoz',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Greedy Geckoz - Degen Paradise',
+    title: 'Geckoz - Degen Paradise',
     description: 'Where lambos go to die. Join the cope cave.',
     creator: '@GreedyGeckoz',
   },
@@ -57,7 +57,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="font-terminal bg-void text-degen-green antialiased">
+      <body className="font-body bg-white text-gray-900 antialiased">
         <WalletContextProvider>
           {children}
         </WalletContextProvider>

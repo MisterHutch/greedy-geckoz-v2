@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import AnimatedGecko from './AnimatedGecko'
 
 interface HeroSectionProps {
   mintStats: {
     totalMinted: number
     totalSupply: number
-    nextLotteryAt: number
+    lotteryWinnersCount: number
+    lotteryWinnersRemaining: number
     lotteryPool: number
   }
 }
@@ -31,9 +33,14 @@ export default function HeroSection({ mintStats }: HeroSectionProps) {
   }, [])
 
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-primary-50 to-white">
+    <section className="py-20 px-4 relative">
+      {/* Psychedelic Background Layer */}
+      <div className="absolute inset-0 psychedelic-radial opacity-70"></div>
+      {/* Overlay for readability */}
+      <div className="absolute inset-0 bg-white/40"></div>
+      <div className="relative z-10">
       <div className="max-w-6xl mx-auto text-center">
-        {/* Main Logo/Gecko */}
+        {/* Animated Interactive Gecko */}
         <motion.div
           className="mb-8"
           initial={{ opacity: 0, scale: 0.8 }}
@@ -41,30 +48,18 @@ export default function HeroSection({ mintStats }: HeroSectionProps) {
           transition={{ duration: 0.8 }}
         >
           <div className="inline-block relative">
-            <motion.div
-              className="text-8xl md:text-9xl float-animation"
-              animate={{ 
-                y: [0, -10, 0],
-              }}
-              transition={{ 
-                duration: 3, 
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            >
-              🦎
-            </motion.div>
+            <AnimatedGecko />
           </div>
         </motion.div>
 
         {/* Brand Title */}
         <motion.h1
-          className="text-5xl md:text-7xl font-bold text-gray-900 mb-6"
+          className="text-5xl md:text-7xl font-bold mb-6 trippy-text neon-glow-multicolor"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          Greedy Geckoz
+          Geckoz
         </motion.h1>
 
         {/* Typewriter Motto */}
@@ -152,11 +147,12 @@ export default function HeroSection({ mintStats }: HeroSectionProps) {
               />
             </div>
             <div className="flex justify-between text-xs text-gray-600">
-              <span>Next Lottery: {mintStats.nextLotteryAt - (mintStats.totalMinted % mintStats.nextLotteryAt)} mints</span>
-              <span>{mintStats.totalSupply - mintStats.totalMinted} remaining</span>
+              <span>Lottery Winners: {5 - mintStats.lotteryWinnersRemaining}/5 found</span>
+              <span>{mintStats.totalSupply - mintStats.totalMinted} geckos remaining</span>
             </div>
           </div>
         </motion.div>
+      </div>
       </div>
     </section>
   )

@@ -7,13 +7,56 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 export default function GeckoCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0)
   
-  // Mock gecko data - replace with real gecko images/metadata
+  // Real gecko data with actual images
   const geckos = [
-    { id: 1, name: 'Gecko #1337', rarity: 'Legendary', traits: ['Golden', 'Entrepreneur', 'Diamond Hands'] },
-    { id: 2, name: 'Gecko #420', rarity: 'Epic', traits: ['Green', 'Hustler', 'HODL Master'] },
-    { id: 3, name: 'Gecko #69', rarity: 'Rare', traits: ['Blue', 'Trader', 'Moon Seeker'] },
-    { id: 4, name: 'Gecko #2222', rarity: 'Mythic', traits: ['Rainbow', 'Legend', 'Ultimate Greed'] },
-    { id: 5, name: 'Gecko #1', rarity: 'Genesis', traits: ['Original', 'Founder', 'Alpha'] },
+    { 
+      id: 1337, 
+      name: 'Gecko #1337', 
+      image: '/geckoz/gecko-1337.png',
+      rarity: 'Legendary', 
+      traits: ['Elite Hacker', 'Code Wizard', 'NFT Genius'],
+      description: "This gecko wrote the smart contract for your portfolio (it's in the red)"
+    },
+    { 
+      id: 420, 
+      name: 'Gecko #420', 
+      image: '/geckoz/gecko-420.png',
+      rarity: 'Epic', 
+      traits: ['Chill Vibes', 'Diamond Hands', 'Moon Walker'],
+      description: "The most relaxed gecko in the collection. Probably high on hopium."
+    },
+    { 
+      id: 69, 
+      name: 'Gecko #69', 
+      image: '/geckoz/gecko-69.png',
+      rarity: 'Rare', 
+      traits: ['Nice', 'Meme Lord', 'Culture Icon'],
+      description: "Nice. This gecko gets it. Peak internet culture appreciation."
+    },
+    { 
+      id: 1776, 
+      name: 'Gecko #1776', 
+      image: '/geckoz/gecko-1776.png',
+      rarity: 'Patriotic', 
+      traits: ['Freedom Lover', 'Revolution', 'Independence'],
+      description: "This gecko declared independence from traditional finance. Very American."
+    },
+    { 
+      id: 1, 
+      name: 'Gecko #1', 
+      image: '/geckoz/gecko-1.png',
+      rarity: 'Genesis', 
+      traits: ['OG', 'First', 'Alpha'],
+      description: "The original gecko. Started this whole mess. You're welcome."
+    },
+    { 
+      id: 721, 
+      name: 'Gecko #721', 
+      image: '/geckoz/gecko-721.png',
+      rarity: 'Uncommon', 
+      traits: ['Standard Issue', 'Regular Joe', 'Average'],
+      description: "Just a regular gecko doing gecko things. Probably you IRL."
+    },
   ]
 
   const nextSlide = () => {
@@ -36,6 +79,8 @@ export default function GeckoCarousel() {
       case 'epic': return 'text-purple-500 border-purple-500'
       case 'mythic': return 'text-pink-500 border-pink-500'
       case 'genesis': return 'text-primary-500 border-primary-500'
+      case 'patriotic': return 'text-red-500 border-red-500'
+      case 'uncommon': return 'text-gray-500 border-gray-500'
       default: return 'text-blue-500 border-blue-500'
     }
   }
@@ -45,10 +90,10 @@ export default function GeckoCarousel() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Meet the Geckoz
+            Meet Your New Overpriced Friends
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Each gecko is uniquely generated with different traits, rarities, and entrepreneurial spirit levels.
+            Each gecko has unique traits, questionable life choices, and an inflated sense of self-worth. Just like NFT collectors.
           </p>
         </div>
 
@@ -72,9 +117,22 @@ export default function GeckoCarousel() {
                   transition={{ duration: 0.3 }}
                   className="bg-white rounded-2xl shadow-xl p-8 text-center"
                 >
-                  {/* Gecko Placeholder */}
-                  <div className="w-64 h-64 mx-auto mb-6 bg-gradient-to-br from-primary-100 to-accent-100 rounded-xl flex items-center justify-center">
-                    <span className="text-8xl">🦎</span>
+                  {/* Gecko Image */}
+                  <div className="w-64 h-64 mx-auto mb-6 bg-gradient-to-br from-primary-50 to-accent-50 rounded-xl overflow-hidden">
+                    <img 
+                      src={geckos[currentIndex].image} 
+                      alt={geckos[currentIndex].name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback to emoji if image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.innerHTML = '<span class="text-8xl flex items-center justify-center h-full">🦎</span>';
+                        }
+                      }}
+                    />
                   </div>
 
                   {/* Gecko Info */}
@@ -87,18 +145,24 @@ export default function GeckoCarousel() {
                   </div>
 
                   {/* Traits */}
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3">Traits</h4>
-                    <div className="flex flex-wrap justify-center gap-2">
-                      {geckos[currentIndex].traits.map((trait, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium"
-                        >
-                          {trait}
-                        </span>
-                      ))}
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3">Traits</h4>
+                      <div className="flex flex-wrap justify-center gap-2">
+                        {geckos[currentIndex].traits.map((trait, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium"
+                          >
+                            {trait}
+                          </span>
+                        ))}
+                      </div>
                     </div>
+                    {/* Sassy Description */}
+                    <p className="text-sm text-gray-600 italic">
+                      {geckos[currentIndex].description}
+                    </p>
                   </div>
                 </motion.div>
               </AnimatePresence>

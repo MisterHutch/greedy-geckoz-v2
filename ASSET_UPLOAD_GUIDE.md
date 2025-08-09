@@ -18,11 +18,24 @@ greedy-geckoz-refresh/
 │       └── ... (up to 5000.json)
 └── public/assets/images/ 👈 ALTERNATIVE: For direct web access
 
+greedy-geckoz-refresh/
+├── assets/
+│   ├── images/           👈 PUT YOUR PNG FILES HERE
+│   │   ├── 1.png
+│   │   ├── 2.png
+│   │   ├── 3.png
+│   │   └── ... (up to 5000.png)
+│   └── metadata/         👈 PUT YOUR JSON FILES HERE
+│       ├── 1.json
+│       ├── 2.json
+│       ├── 3.json
+│       └── ... (up to 5000.json)
+└── public/assets/images/ 👈 ALTERNATIVE: For direct web access
 
 ## 🎯 **Option 1: Local Asset Upload (Recommended)**
 
 ### **Step 1: Image Files**
-```bash
+
 # Place your PNG files here:
 assets/images/
 ├── 1.png
@@ -30,16 +43,18 @@ assets/images/
 ├── 3.png
 ├── ...
 └── 5000.png
-```
+
 
 **Naming Convention:**
+
 - Files must be named: `1.png`, `2.png`, `3.png`, ..., `5000.png`
 - **Important**: No leading zeros (use `1.png`, not `001.png`)
 - All files must be PNG format
 - Recommended size: 512x512 or 1000x1000 pixels
 
 ### **Step 2: Metadata Files**
-```bash
+
+
 # Place your JSON files here:
 assets/metadata/
 ├── 1.json
@@ -47,10 +62,10 @@ assets/metadata/
 ├── 3.json
 ├── ...
 └── 5000.json
-```
+
 
 **JSON Format for each file:**
-```json
+
 {
   "name": "Greedy Gecko #1",
   "description": "A greedy little gecko ready to lose money on Solana",
@@ -88,6 +103,7 @@ assets/metadata/
 ## 🎪 **Option 2: Zip File Upload**
 
 ### **Create a zip file with this structure:**
+
 ```
 geckos.zip
 ├── images/
@@ -101,6 +117,7 @@ geckos.zip
 ```
 
 ### **Upload via Admin Panel:**
+
 1. Go to `http://localhost:3000/admin`
 2. Click "Upload Zip File"
 3. Select your `geckos.zip` file
@@ -111,6 +128,7 @@ geckos.zip
 If you want to upload directly to IPFS first:
 
 ### **Using Pinata:**
+
 ```bash
 # Upload images folder
 curl -X POST \
@@ -198,20 +216,24 @@ npm run dev
 ## 🆘 **Common Issues**
 
 **Missing Files:**
+
 - Make sure you have exactly 5000 PNG and 5000 JSON files
 - Check for any gaps in numbering (missing 1.png, 2.png, etc.)
 
 **Wrong Format:**
+
 - Files must be `1.png` not `001.png` or `gecko1.png`
 - JSON files must be valid JSON format
 
 **File Size:**
+
 - Keep PNG files under 2MB each for faster uploads
 - Total collection should be under 10GB
 
 ## 📞 **Need Help?**
 
 If you run into issues organizing your 5000 Geckos, let me know:
+
 - What's your current file naming convention?
 - Are images and metadata in separate folders?
 - Any special organization needs?

@@ -13,7 +13,8 @@ export default function Home() {
   const [mintStats, setMintStats] = useState({
     totalMinted: 0,
     totalSupply: 2222,
-    nextLotteryAt: 444,
+    lotteryWinnersCount: 0,
+    lotteryWinnersRemaining: 5,
     lotteryPool: 0.93
   })
 
@@ -30,17 +31,17 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-white font-sans overflow-x-hidden">
+    <div className="min-h-screen psychedelic-gradient-hero font-sans overflow-x-hidden fly-cursor">
       <Header />
       
       {/* Live Stats Ticker */}
-      <div className="bg-primary-500 text-white py-3 overflow-hidden">
+      <div className="psychedelic-gradient-1 text-white py-3 overflow-hidden">
         <div className="animate-scroll whitespace-nowrap text-sm font-medium">
-          🦎 {mintStats.totalMinted}/{mintStats.totalSupply} Geckos Minted | 
-          💰 Next Lottery at {mintStats.nextLotteryAt} mints (~{mintStats.lotteryPool} SOL Prize) | 
-          ⚡ 0.0169 SOL each | 
-          🎯 "Greed is Good" | 
-          Follow @greedygeckoz for updates
+          🦎 {mintStats.totalMinted}/{mintStats.totalSupply} Geckos Claimed by Degens | 
+          💰 {mintStats.lotteryWinnersRemaining}/5 Lottery Winners Still Out There (~{mintStats.lotteryPool} SOL each) | 
+          ⚡ Only 0.0169 SOL (because we're generous like that) | 
+          🎯 "Why be broke when you can own a jpeg gecko?" | 
+          Follow @geckoz for the chaos
         </div>
       </div>
 
@@ -52,17 +53,21 @@ export default function Home() {
         <GeckoCarousel />
         
         {/* Mint Interface */}
-        <section className="py-16 px-4 bg-gray-50">
+        <section className="py-16 px-4 psychedelic-gradient-2 relative">
+          {/* Add overlay for better readability */}
+          <div className="absolute inset-0 bg-white/80"></div>
+          <div className="relative z-10">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                Mint Your Greedy Gecko
+                Mint Your Gecko (And Maybe Get Rich?)
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Join 2222 unique gecko collectors • 0.0169 SOL each • Lottery every 444 mints with ~0.93 SOL prizes!
+                Join 2222 gecko degenerates • 0.0169 SOL each • 5 random lottery winners get ~0.93 SOL each (because someone has to get lucky, right?)
               </p>
             </div>
             <MintInterface mintStats={mintStats} />
+          </div>
           </div>
         </section>
         
@@ -77,21 +82,21 @@ export default function Home() {
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-3 gap-8 mb-8">
               <div>
-                <h3 className="text-xl font-bold mb-4 text-primary-500">Greedy Geckoz</h3>
+                <h3 className="text-xl font-bold mb-4 text-primary-500">Geckoz</h3>
                 <p className="text-gray-400 mb-4">
-                  The most entrepreneurial gecko collection on Solana. Greed is Good.
+                  2222 gecko degenerates who think owning JPEGs makes them entrepreneurs. Spoiler: it doesn't, but it's fun.
                 </p>
                 <div className="text-sm text-gray-500">
-                  Built with 💚 for the gecko community
+                  Built with 💚 and questionable life choices
                 </div>
               </div>
               <div>
                 <h4 className="font-semibold mb-4">Collection Info</h4>
                 <ul className="space-y-2 text-gray-400 text-sm">
-                  <li>Supply: 2,222 Unique Geckos</li>
-                  <li>Price: 0.0169 SOL</li>
-                  <li>Lottery: Every 444 mints</li>
-                  <li>Prize Pool: ~0.93 SOL each</li>
+                  <li>Supply: 2,222 Overpriced JPEGs</li>
+                  <li>Price: 0.0169 SOL (bargain!)</li>
+                  <li>Lottery: 5 random winners total</li>
+                  <li>Prize: ~0.93 SOL each (better than your portfolio)</li>
                 </ul>
               </div>
               <div>
@@ -123,7 +128,7 @@ export default function Home() {
               </div>
             </div>
             <div className="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
-              © 2025 Greedy Geckoz. All rights reserved. Remember: This is not financial advice.
+              © 2025 Geckoz. All rights reserved. This is definitely not financial advice (seriously, don't listen to geckos about money).
             </div>
           </div>
         </footer>
