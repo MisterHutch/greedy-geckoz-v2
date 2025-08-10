@@ -1,14 +1,32 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: 'standalone',
   eslint: {
-    // Disable ESLint during builds for now
-    ignoreDuringBuilds: true,
+    // Re-enable ESLint (we can fix the quote issues later)
+    ignoreDuringBuilds: false,
   },
   images: {
-    domains: ['via.placeholder.com', 'ipfs.io', 'gateway.pinata.cloud'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ipfs.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'gateway.pinata.cloud',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.ipfs.dweb.link',
+      }
+    ],
     formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   webpack: (config, { isServer }) => {
     // Exclude Node.js modules from client bundle
