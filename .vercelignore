@@ -1,0 +1,25 @@
+# Exclude Node.js scripts that shouldn't be bundled for the web
+/scripts/
+*.js
+!next.config.js
+!postcss.config.js
+!tailwind.config.js
+
+# Exclude development and build artifacts
+.env.local
+.env
+node_modules/
+.next/
+.git/
+*.log
+*.psd
+
+# Exclude asset files that are too large
+/assets/geckoz/images/*.png
+/assets/images/
+
+# Keep essential config files
+!package.json
+!package-lock.json
+!next-env.d.ts
+!tsconfig.json
