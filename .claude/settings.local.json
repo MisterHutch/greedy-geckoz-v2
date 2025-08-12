@@ -5,7 +5,10 @@
       "Bash(cp:*)",
       "Bash(git add:*)",
       "Bash(npm install)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(find:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }
