@@ -1,10 +1,15 @@
-# Exclude Node.js scripts that shouldn't be bundled for the web
+# Exclude specific Node.js script directories only
 /tools/
 /scripts/
-*.js
-!next.config.js
-!postcss.config.js  
-!tailwind.config.js
+
+# Exclude individual problematic JS files (not ALL js files)
+/tools/*.js
+/scripts/*.js
+integrate-ipfs-data.js
+ipfs-direct-upload.js
+simple-*.js
+upload-*.js
+test-*.js
 
 # Exclude development and build artifacts
 .env.local
@@ -22,9 +27,3 @@ node_modules/
 # Clear any potential caches
 .next/cache/
 .swc/
-
-# Keep essential config files
-!package.json
-!package-lock.json
-!next-env.d.ts
-!tsconfig.json
