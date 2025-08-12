@@ -2,7 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   eslint: {
-    // Re-enable ESLint (we can fix the quote issues later)
     ignoreDuringBuilds: false,
   },
   images: {
@@ -29,7 +28,6 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   webpack: (config, { isServer }) => {
-    // Exclude Node.js modules from client bundle
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,

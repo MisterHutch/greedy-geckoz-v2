@@ -1,8 +1,9 @@
 # Exclude Node.js scripts that shouldn't be bundled for the web
+/tools/
 /scripts/
 *.js
 !next.config.js
-!postcss.config.js
+!postcss.config.js  
 !tailwind.config.js
 
 # Exclude development and build artifacts
@@ -14,9 +15,13 @@ node_modules/
 *.log
 *.psd
 
-# Exclude asset files that are too large
+# Exclude asset files that are too large  
 /assets/geckoz/images/*.png
 /assets/images/
+
+# Clear any potential caches
+.next/cache/
+.swc/
 
 # Keep essential config files
 !package.json
