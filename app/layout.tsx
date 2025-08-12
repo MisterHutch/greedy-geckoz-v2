@@ -57,7 +57,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="font-body bg-degen-green text-gray-900 antialiased">
+      <body className="font-body bg-gray-50 text-gray-900 antialiased min-h-screen">
         <WalletContextProvider>
           {children}
         </WalletContextProvider>
