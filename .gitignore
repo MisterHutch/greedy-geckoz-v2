@@ -94,3 +94,4 @@ wallet.json
 # Large asset files - deploy these to IPFS separately
 assets/geckoz/images/
 assets/images/
+.vercel

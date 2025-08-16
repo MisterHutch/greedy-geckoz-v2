@@ -17,6 +17,7 @@ interface MintInterfaceProps {
     lotteryWinnersCount: number
     lotteryWinnersRemaining: number
     lotteryPool: number
+    availableGeckos?: number
   }
 }
 
@@ -93,7 +94,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
       return
     }
 
-    if (realMintStats.availableGeckos === 0) {
+    if ((realMintStats.availableGeckos || 0) === 0) {
       notifications.showSoldOut()
       return
     }
@@ -155,7 +156,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
 
   const totalCost = MINT_CONFIG.PRICE_SOL
   const canAfford = userBalance >= totalCost
-  const soldOut = realMintStats.availableGeckos === 0
+  const soldOut = (realMintStats.availableGeckos || 0) === 0
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -275,7 +276,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
             {MINT_CONFIG.PRICE_SOL} SOL
           </div>
           <div className="text-sm text-gray-500 mt-1">
-            Available Geckos: {realMintStats.availableGeckos}
+            Available Geckos: {realMintStats.availableGeckos || 'Loading...'}
           </div>
         </div>
 
