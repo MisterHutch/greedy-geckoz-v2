@@ -25,7 +25,7 @@ export default function LotterySection({ mintStats }: LotterySectionProps) {
   ]
 
   return (
-    <section className="py-16 px-4 psychedelic-gradient-3 relative">
+    <section id="lottery" className="py-16 px-4 psychedelic-gradient-3 relative">
       {/* Overlay for readability */}
       <div className="absolute inset-0 bg-white/70"></div>
       <div className="relative z-10">

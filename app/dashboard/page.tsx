@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { Wallet, TrendingUp, TrendingDown, DollarSign, Calendar, RefreshCw, Eye, EyeOff, BarChart3, Activity } from 'lucide-react'
 import Header from '../components/Header'
 import PnLChart from '../components/PnLChart'
+import WalletButton from '../components/WalletButton'
 
 interface Transaction {
   signature: string
@@ -33,8 +35,7 @@ interface DataPoint {
 }
 
 export default function Dashboard() {
-  const [connected, setConnected] = useState(false)
-  const [walletAddress, setWalletAddress] = useState('')
+  const { connected, publicKey } = useWallet()
   const [loading, setLoading] = useState(false)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [walletStats, setWalletStats] = useState<WalletStats | null>(null)
@@ -50,24 +51,20 @@ export default function Dashboard() {
     { value: '12m', label: '1Y', days: 365 }
   ]
 
-  // Mock wallet connection
-  const handleConnectWallet = async () => {
-    setLoading(true)
-    // Simulate wallet connection
-    setTimeout(() => {
-      setConnected(true)
-      setWalletAddress('7xKx...9pQe')
-      generateMockData()
-      setLoading(false)
-    }, 2000)
-  }
-
-  const handleDisconnectWallet = () => {
-    setConnected(false)
-    setWalletAddress('')
-    setTransactions([])
-    setWalletStats(null)
-  }
+  // Load data when wallet connects
+  useEffect(() => {
+    if (connected && publicKey) {
+      setLoading(true)
+      // Simulate loading delay for better UX
+      setTimeout(() => {
+        generateMockData()
+        setLoading(false)
+      }, 1500)
+    } else {
+      setTransactions([])
+      setWalletStats(null)
+    }
+  }, [connected, publicKey])
 
   // Generate mock transaction data for demo
   const generateMockData = () => {
@@ -225,23 +222,15 @@ export default function Dashboard() {
                 <p className="text-gray-600 mb-6">
                   Connect your Solana wallet to see your P&L and get roasted by our AI gecko
                 </p>
-                <button
-                  onClick={handleConnectWallet}
-                  disabled={loading}
-                  className="btn-primary w-full flex items-center justify-center space-x-2"
-                >
-                  {loading ? (
-                    <>
-                      <RefreshCw className="w-5 h-5 animate-spin" />
-                      <span>Connecting...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Wallet className="w-5 h-5" />
-                      <span>Connect Wallet (If You Dare)</span>
-                    </>
-                  )}
-                </button>
+                <div className="flex justify-center">
+                  <WalletButton />
+                </div>
+                {loading && (
+                  <div className="mt-4 flex items-center justify-center space-x-2 text-primary-600">
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    <span>Loading your financial disasters...</span>
+                  </div>
+                )}
               </div>
             </motion.div>
           ) : (
@@ -259,15 +248,12 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Connected Wallet</p>
-                    <p className="font-mono font-bold">{walletAddress}</p>
+                    <p className="font-mono font-bold">
+                      {publicKey ? `${publicKey.toString().slice(0, 4)}...${publicKey.toString().slice(-4)}` : ''}
+                    </p>
                   </div>
                 </div>
-                <button
-                  onClick={handleDisconnectWallet}
-                  className="text-red-500 hover:text-red-600 font-medium"
-                >
-                  Disconnect
-                </button>
+                <WalletButton />
               </motion.div>
 
               {/* Stats Cards */}

@@ -114,10 +114,40 @@ export default function HeroSection({ mintStats }: HeroSectionProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1 }}
         >
-          <button className="btn-primary">
+          <button 
+            className="btn-primary"
+            onClick={() => {
+              // Scroll to mint section
+              const mintSection = document.querySelector('section[id="mint"]') || 
+                                  document.querySelector('[class*="MintInterface"]') ||
+                                  document.querySelector('section:nth-of-type(3)'); // Third section is mint
+              
+              if (mintSection) {
+                mintSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              } else {
+                // Fallback - scroll to mint section by approximate position
+                window.scrollTo({ top: window.innerHeight * 1.5, behavior: 'smooth' });
+              }
+            }}
+          >
             🦎 Mint Your Gecko
           </button>
-          <button className="btn-outline">
+          <button 
+            className="btn-outline"
+            onClick={() => {
+              // Scroll to lottery section
+              const lotterySection = document.querySelector('section[id="lottery"]') ||
+                                     document.querySelector('[class*="LotterySection"]') ||
+                                     document.querySelector('section:nth-of-type(4)'); // Fourth section is lottery
+              
+              if (lotterySection) {
+                lotterySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              } else {
+                // Fallback - scroll to lottery section by approximate position  
+                window.scrollTo({ top: window.innerHeight * 2.5, behavior: 'smooth' });
+              }
+            }}
+          >
             🎰 View Lottery
           </button>
         </motion.div>

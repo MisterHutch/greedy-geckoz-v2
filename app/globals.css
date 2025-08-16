@@ -49,6 +49,103 @@ input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.1);
 }
 
+/* Force cursor to always be on top */
+* {
+  cursor: inherit !important;
+}
+
+body {
+  cursor: default;
+}
+
+button, a, [role="button"] {
+  cursor: pointer !important;
+}
+
+/* Custom notification styles */
+.gecko-notification {
+  @apply fixed top-4 right-4 z-[9999] max-w-sm p-4 rounded-lg shadow-2xl border-2;
+  background: linear-gradient(135deg, #ff0050, #9945ff, #00ff88);
+  border-color: #fff;
+  color: white;
+  animation: slideInRight 0.5s ease-out, pulseGlow 2s infinite alternate;
+}
+
+.gecko-notification.error {
+  background: linear-gradient(135deg, #ff0050, #ff6b35);
+}
+
+.gecko-notification.success {
+  background: linear-gradient(135deg, #00ff88, #56ec6a);
+}
+
+.gecko-notification.warning {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulseGlow {
+  from {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+  to {
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.7);
+  }
+}
+
+/* Trippy text effect for notifications */
+.trippy-notification-text {
+  animation: colorShift 3s infinite;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+@keyframes colorShift {
+  0% { color: #fff; }
+  25% { color: #ff0050; }
+  50% { color: #00ff88; }
+  75% { color: #9945ff; }
+  100% { color: #fff; }
+}
+
+/* Environment indicator styles */
+.env-indicator {
+  @apply fixed top-4 left-4 z-[9999] px-3 py-1 rounded-full text-xs font-bold;
+  animation: bounce 2s infinite;
+}
+
+.env-indicator.mainnet {
+  background: linear-gradient(135deg, #ff0050, #9945ff);
+  color: white;
+}
+
+.env-indicator.devnet {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  color: black;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
 input[type="range"]::-moz-range-thumb {
   width: 18px;
   height: 18px;

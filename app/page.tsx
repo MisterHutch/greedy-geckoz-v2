@@ -8,8 +8,14 @@ import MintInterface from './components/MintInterface'
 import GeckoCarousel from './components/GeckoCarousel'
 import LotterySection from './components/LotterySection'
 import TeamSection from './components/TeamSection'
+import EnvironmentToggle, { useEnvironment } from './components/EnvironmentToggle'
+import GeckoNotification, { useGeckoNotifications } from './components/GeckoNotification'
 
 export default function Home() {
+  // Global state
+  const environment = useEnvironment()
+  const notifications = useGeckoNotifications()
+  
   const [mintStats, setMintStats] = useState({
     totalMinted: 0,
     totalSupply: 2222,
@@ -53,7 +59,7 @@ export default function Home() {
         <GeckoCarousel />
         
         {/* Mint Interface */}
-        <section className="py-16 px-4 psychedelic-gradient-2 relative">
+        <section id="mint" className="py-16 px-4 psychedelic-gradient-2 relative">
           {/* Add overlay for better readability */}
           <div className="absolute inset-0 bg-white/80"></div>
           <div className="relative z-10">
@@ -133,6 +139,23 @@ export default function Home() {
           </div>
         </footer>
       </main>
+      
+      {/* Global Environment Toggle */}
+      <EnvironmentToggle 
+        currentEnv={environment}
+        onEnvChange={(env) => {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('gecko-environment', env)
+            window.location.reload() // Refresh to apply new environment
+          }
+        }}
+      />
+      
+      {/* Global Gecko Notifications */}
+      <GeckoNotification
+        notifications={notifications.notifications}
+        onDismiss={notifications.removeNotification}
+      />
     </div>
   )
 }

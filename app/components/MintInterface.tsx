@@ -2,15 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-// Mock wallet hook for demo purposes
-const useWallet = () => ({
-  publicKey: null,
-  connected: false,
-  signTransaction: null
-})
+import { useWallet } from '@solana/wallet-adapter-react'
 import { Connection, LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { Trophy, Zap, Clock, DollarSign, Users, Wallet, ExternalLink } from 'lucide-react'
-import { GeckoMintProgram, MINT_CONFIG, validateMintConditions } from '../../lib/solana/mint-program'
+import WalletButton from './WalletButton'
+import GeckoMintService, { MINT_CONFIG } from '../../lib/solana/gecko-mint-service'
+import GeckoNotification, { useGeckoNotifications } from './GeckoNotification'
+import EnvironmentToggle, { useEnvironment } from './EnvironmentToggle'
 
 interface MintInterfaceProps {
   mintStats: {
@@ -23,103 +21,141 @@ interface MintInterfaceProps {
 }
 
 export default function MintInterface({ mintStats }: MintInterfaceProps) {
-  const { publicKey, connected, signTransaction } = useWallet()
+  const wallet = useWallet()
+  const { publicKey, connected } = wallet
   const [isMinting, setIsMinting] = useState(false)
   const [userBalance, setUserBalance] = useState(0)
   const [mintResult, setMintResult] = useState<any>(null)
   const [showLotteryWin, setShowLotteryWin] = useState(false)
-  const [mintProgram, setMintProgram] = useState<GeckoMintProgram | null>(null)
-  const [quantity, setQuantity] = useState(1)
+  const [mintService, setMintService] = useState<GeckoMintService | null>(null)
+  const [realMintStats, setRealMintStats] = useState(mintStats)
+  
+  // Use our custom notification system and environment toggle
+  const notifications = useGeckoNotifications()
+  const environment = useEnvironment()
 
-  const lotteryWinnersLeft = mintStats.lotteryWinnersRemaining
+  const lotteryWinnersLeft = realMintStats.lotteryWinnersRemaining
   const lotteryProgress = ((5 - lotteryWinnersLeft) / 5) * 100
 
-  // Initialize connection and program
+  // Initialize connection and mint service based on environment
   useEffect(() => {
-    const connection = new Connection(process.env.NEXT_PUBLIC_RPC_ENDPOINT || 'https://api.mainnet-beta.solana.com')
-    const program = new GeckoMintProgram(connection)
-    setMintProgram(program)
-  }, [])
+    const connection = new Connection(environment.getEndpoint())
+    const service = new GeckoMintService(connection, environment.getTreasuryAddress())
+    setMintService(service)
+    
+    // Update stats from service
+    const stats = service.getMintStats()
+    setRealMintStats(stats)
+  }, [environment.environment]) // Recreate service when environment changes
+
+  // Update stats periodically
+  useEffect(() => {
+    if (mintService) {
+      const updateStats = () => {
+        const stats = mintService.getMintStats()
+        setRealMintStats(stats)
+      }
+      
+      updateStats()
+      const interval = setInterval(updateStats, 5000) // Update every 5 seconds
+      return () => clearInterval(interval)
+    }
+  }, [mintService])
 
   // Load user balance
   useEffect(() => {
-    if (!publicKey || !mintProgram) return
+    if (!publicKey || !mintService) return
 
     const loadBalance = async () => {
       try {
-        const connection = new Connection(process.env.NEXT_PUBLIC_RPC_ENDPOINT || 'https://api.mainnet-beta.solana.com')
+        const connection = new Connection(environment.getEndpoint())
         const balance = await connection.getBalance(publicKey)
         setUserBalance(balance / LAMPORTS_PER_SOL)
       } catch (error) {
         console.error('Failed to load balance:', error)
+        notifications.addNotification('error', 'Balance Load Failed', 'Could not load wallet balance')
       }
     }
 
     loadBalance()
-  }, [publicKey, mintProgram])
+    const interval = setInterval(loadBalance, 10000) // Update every 10 seconds
+    return () => clearInterval(interval)
+  }, [publicKey, mintService])
 
   const handleMint = async () => {
-    if (!connected || !publicKey || !mintProgram) {
-      alert('Please connect your wallet first!')
+    if (!connected || !publicKey || !mintService) {
+      notifications.showWalletNotConnected()
       return
     }
 
-    const validation = validateMintConditions(mintStats.totalMinted, userBalance, quantity)
-    if (!validation.canMint) {
-      alert(validation.reason)
+    if (userBalance < MINT_CONFIG.PRICE_SOL) {
+      notifications.showInsufficientFunds(MINT_CONFIG.PRICE_SOL, userBalance)
+      return
+    }
+
+    if (realMintStats.availableGeckos === 0) {
+      notifications.showSoldOut()
       return
     }
 
     setIsMinting(true)
+    
     try {
-      const results = []
+      // Show processing notification with environment info
+      const loadingId = notifications.addNotification(
+        'info',
+        `Processing Mint on ${environment.environment.toUpperCase()}...`,
+        environment.isDevnet 
+          ? "Using devnet - free fake SOL for testing! 🧪" 
+          : "Using mainnet - this costs real SOL! 💰",
+        0 // Don't auto-dismiss
+      )
       
-      for (let i = 0; i < quantity; i++) {
-        const geckoNumber = mintStats.totalMinted + i + 1
-        const metadata = {
-          name: `Greedy Gecko #${geckoNumber}`,
-          symbol: 'GECKO',
-          description: 'An entrepreneurial gecko ready to dominate Solana',
-          image: `https://your-ipfs-gateway.com/gecko-${geckoNumber}.png`,
-          attributes: [
-            { trait_type: 'Background', value: 'Cosmic Green' },
-            { trait_type: 'Eyes', value: 'Diamond Vision' },
-            { trait_type: 'Attitude', value: 'Greedy' },
-            { trait_type: 'Rarity', value: 'Epic' }
-          ],
-          properties: {
-            files: [
-              {
-                uri: `https://your-ipfs-gateway.com/gecko-${geckoNumber}.png`,
-                type: 'image/png'
-              }
-            ],
-            category: 'image'
-          }
-        }
-
-        const result = await mintProgram.mintGecko(publicKey, metadata, geckoNumber)
-        results.push(result)
-
+      const result = await mintService.mintGecko(wallet)
+      
+      notifications.removeNotification(loadingId)
+      
+      if (result.success) {
+        // Update local stats
+        const updatedStats = mintService.getMintStats()
+        setRealMintStats(updatedStats)
+        
+        setMintResult(result)
+        
         if (result.lotteryWon) {
           setShowLotteryWin(true)
-          setTimeout(() => setShowLotteryWin(false), 8000)
+          setTimeout(() => setShowLotteryWin(false), 10000)
+          notifications.showLotteryWin(result.totalGeckos || 3, result.solReceived || 0.98)
+        } else {
+          notifications.showMintSuccess(result.geckoId || 0)
         }
+        
+        // Refresh balance
+        setTimeout(async () => {
+          try {
+            const connection = new Connection(environment.getEndpoint())
+            const balance = await connection.getBalance(publicKey)
+            setUserBalance(balance / LAMPORTS_PER_SOL)
+          } catch (error) {
+            console.error('Failed to refresh balance:', error)
+          }
+        }, 2000)
+        
+      } else {
+        notifications.showMintFailed(result.error)
       }
-
-      setMintResult(results[results.length - 1]) // Show last mint result
 
     } catch (error) {
       console.error('Mint failed:', error)
-      alert('Mint failed! Check console for details.')
+      notifications.showMintFailed((error as Error)?.message)
     } finally {
       setIsMinting(false)
     }
   }
 
-  const totalCost = MINT_CONFIG.PRICE * quantity
+  const totalCost = MINT_CONFIG.PRICE_SOL
   const canAfford = userBalance >= totalCost
-  const soldOut = mintStats.totalMinted >= mintStats.totalSupply
+  const soldOut = realMintStats.availableGeckos === 0
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -146,7 +182,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                 Congratulations! You just won the lottery jackpot!
               </p>
               <div className="text-4xl font-bold text-primary-500 mb-4">
-                +{mintResult.lotteryAmount?.toFixed(4)} SOL
+                +{mintResult.solReceived?.toFixed(4)} SOL + {mintResult.totalGeckos} Geckos!
               </div>
               <p className="text-gray-600 text-sm mb-6">
                 The gecko gods have blessed you! 🦎✨
@@ -178,7 +214,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
           <div className="text-center p-4 bg-gray-50 rounded-lg">
             <Users className="w-6 h-6 text-accent-500 mx-auto mb-2" />
             <div className="text-lg font-bold text-gray-900">
-              {mintStats.totalMinted.toLocaleString()}
+              {realMintStats.totalMinted.toLocaleString()}
             </div>
             <div className="text-sm text-gray-600">Minted</div>
           </div>
@@ -186,7 +222,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
           <div className="text-center p-4 bg-gray-50 rounded-lg">
             <DollarSign className="w-6 h-6 text-primary-500 mx-auto mb-2" />
             <div className="text-lg font-bold text-gray-900">
-              {MINT_CONFIG.PRICE} SOL
+              {MINT_CONFIG.PRICE_SOL} SOL
             </div>
             <div className="text-sm text-gray-600">Each</div>
           </div>
@@ -194,9 +230,9 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
           <div className="text-center p-4 bg-primary-50 rounded-lg lottery-glow">
             <Trophy className="w-6 h-6 text-primary-500 mx-auto mb-2" />
             <div className="text-lg font-bold text-primary-600">
-              ~{mintStats.lotteryPool} SOL
+              {MINT_CONFIG.LOTTERY_PRIZE_SOL} SOL
             </div>
-            <div className="text-sm text-gray-600">Prize Pool</div>
+            <div className="text-sm text-gray-600">Prize Each</div>
           </div>
 
           <div className="text-center p-4 bg-accent-50 rounded-lg">
@@ -230,30 +266,16 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
           </div>
         </div>
 
-        {/* Quantity Selector */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            How Many Bad Decisions? (Max 10)
-          </label>
-          <div className="flex items-center justify-center space-x-4">
-            <button
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-primary-500 transition-colors"
-            >
-              -
-            </button>
-            <span className="text-2xl font-bold text-gray-900 min-w-[3rem] text-center">
-              {quantity}
-            </span>
-            <button
-              onClick={() => setQuantity(Math.min(10, quantity + 1))}
-              className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-primary-500 transition-colors"
-            >
-              +
-            </button>
+        {/* Mint Price Display */}
+        <div className="mb-6 text-center">
+          <div className="text-sm text-gray-600 mb-2">
+            Mint Price
           </div>
-          <div className="text-center mt-2 text-sm text-gray-600">
-            Total: {totalCost.toFixed(4)} SOL
+          <div className="text-2xl font-bold text-gray-900">
+            {MINT_CONFIG.PRICE_SOL} SOL
+          </div>
+          <div className="text-sm text-gray-500 mt-1">
+            Available Geckos: {realMintStats.availableGeckos}
           </div>
         </div>
 
@@ -263,16 +285,36 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
             <div className="p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
               <Wallet className="w-8 h-8 text-gray-400 mx-auto mb-2" />
               <p className="text-gray-600 mb-4">Connect your wallet to make questionable financial decisions</p>
-              <button className="btn-outline">Connect Wallet (Do It)</button>
+              <div className="flex justify-center">
+                <WalletButton />
+              </div>
             </div>
           ) : soldOut ? (
             <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-              <p className="text-red-700 font-bold">SOLD OUT! All 2,222 overpriced JPEGs have found new homes 🦎 (You snooze, you lose!)</p>
+              <p className="text-red-700 font-bold">SOLD OUT! All geckos have found new homes 🦎 (You snooze, you lose!)</p>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="text-sm text-gray-600">
-                Your balance: {userBalance.toFixed(4)} SOL (not much, but we'll take it)
+              <div className="text-sm text-gray-600 space-y-2">
+                <div>
+                  Your balance: {userBalance.toFixed(4)} SOL {!canAfford && '(not enough, but we appreciate the effort)'}
+                </div>
+                {environment.isDevnet && userBalance < MINT_CONFIG.PRICE_SOL && (
+                  <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
+                    <p className="text-yellow-700 font-semibold">🧪 DEVNET TIP:</p>
+                    <p className="text-yellow-600">
+                      Get free devnet SOL at{' '}
+                      <a 
+                        href="https://faucet.solana.com" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="underline hover:text-yellow-800"
+                      >
+                        faucet.solana.com
+                      </a>
+                    </p>
+                  </div>
+                )}
               </div>
               
               <motion.button
@@ -289,14 +331,14 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                 {isMinting ? (
                   <div className="flex items-center justify-center space-x-2">
                     <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
-                    <span>Minting {quantity} Gecko{quantity > 1 ? 's' : ''}...</span>
+                    <span>Minting Your Gecko...</span>
                   </div>
                 ) : !canAfford ? (
-                  `Insufficient SOL (Need ${totalCost.toFixed(4)} SOL)`
+                  `Need ${totalCost.toFixed(4)} SOL (Go get more!)`
                 ) : (
                   <div className="flex items-center justify-center space-x-2">
                     <span>🦎</span>
-                    <span>Buy {quantity} Overpriced JPEG{quantity > 1 ? 's' : ''}</span>
+                    <span>Mint Gecko for {MINT_CONFIG.PRICE_SOL} SOL</span>
                   </div>
                 )}
               </motion.button>
@@ -320,7 +362,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
             <div className="flex items-center justify-center space-x-2 text-primary-700">
               <Zap className="w-5 h-5" />
               <span className="font-bold">
-                🚨 LOTTERY ALERT: {lotteryWinnersLeft} more winners can still win ~{mintStats.lotteryPool} SOL each! (Could be you... probably not, but could be!)
+                🚨 LOTTERY ALERT: {lotteryWinnersLeft} more winners can still win {MINT_CONFIG.LOTTERY_PRIZE_SOL} SOL + 3 geckos! (Could be you... probably not, but could be!)
               </span>
             </div>
           </motion.div>
@@ -338,25 +380,56 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
             </h4>
             <div className="space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">NFT Address:</span>
+                <span className="text-gray-600">Gecko ID:</span>
+                <span className="font-bold text-gray-800">#{mintResult.geckoId}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600">Transaction:</span>
                 <div className="flex items-center space-x-2">
                   <span className="font-mono text-xs text-gray-800">
-                    {mintResult.mintAddress.slice(0, 8)}...{mintResult.mintAddress.slice(-8)}
+                    {mintResult.txHash?.slice(0, 8)}...{mintResult.txHash?.slice(-8)}
                   </span>
                   <ExternalLink className="w-4 h-4 text-gray-400" />
                 </div>
               </div>
               {mintResult.lotteryWon && (
-                <div className="p-2 bg-primary-100 border border-primary-300 rounded">
-                  <span className="text-primary-800 font-bold">
-                    🏆 LOTTERY WON: +{mintResult.lotteryAmount} SOL!
+                <div className="p-3 bg-gradient-to-r from-yellow-100 to-yellow-200 border border-yellow-300 rounded-lg">
+                  <span className="text-yellow-800 font-bold">
+                    🏆 LOTTERY WINNER: +{mintResult.solReceived} SOL + {mintResult.totalGeckos} Geckos Total!
                   </span>
+                </div>
+              )}
+              {mintResult.geckoData && (
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <img 
+                      src={mintResult.geckoData.image} 
+                      alt={mintResult.geckoData.name}
+                      className="w-16 h-16 rounded-lg object-cover"
+                    />
+                    <div>
+                      <h4 className="font-bold text-gray-900">{mintResult.geckoData.name}</h4>
+                      <p className="text-sm text-gray-600">Your new gecko companion!</p>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
           </motion.div>
         )}
       </div>
+      
+      {/* Environment Toggle */}
+      <EnvironmentToggle 
+        currentEnv={environment.environment}
+        onEnvChange={environment.changeEnvironment}
+      />
+      
+      {/* Custom Gecko Notifications */}
+      <GeckoNotification
+        notifications={notifications.notifications}
+        onDismiss={notifications.removeNotification}
+      />
     </div>
   )
 }
