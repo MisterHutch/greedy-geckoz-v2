@@ -142,13 +142,8 @@ export default function Home() {
       
       {/* Global Environment Toggle */}
       <EnvironmentToggle 
-        currentEnv={environment}
-        onEnvChange={(env) => {
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('gecko-environment', env)
-            window.location.reload() // Refresh to apply new environment
-          }
-        }}
+        currentEnv={environment.environment}
+        onEnvChange={environment.changeEnvironment}
       />
       
       {/* Global Gecko Notifications */}

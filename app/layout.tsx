@@ -44,6 +44,7 @@ export const metadata: Metadata = {
 }
 
 import WalletContextProvider from './components/WalletProvider'
+import { Analytics } from '@vercel/analytics/next'
 
 export default function RootLayout({
   children,
@@ -61,6 +62,7 @@ export default function RootLayout({
         <WalletContextProvider>
           {children}
         </WalletContextProvider>
+        <Analytics />
         
         {/* Console Easter Egg */}
         <script
