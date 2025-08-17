@@ -30,6 +30,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
   const [showLotteryWin, setShowLotteryWin] = useState(false)
   const [mintService, setMintService] = useState<GeckoMintService | null>(null)
   const [realMintStats, setRealMintStats] = useState(mintStats)
+  const [mintQuantity, setMintQuantity] = useState(1)
   
   // Use our custom notification system and environment toggle
   const notifications = useGeckoNotifications()
@@ -89,8 +90,8 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
       return
     }
 
-    if (userBalance < MINT_CONFIG.PRICE_SOL) {
-      notifications.showInsufficientFunds(MINT_CONFIG.PRICE_SOL, userBalance)
+    if (userBalance < totalCost) {
+      notifications.showInsufficientFunds(totalCost, userBalance)
       return
     }
 
@@ -112,7 +113,9 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
         0 // Don't auto-dismiss
       )
       
-      const result = await mintService.mintGecko(wallet)
+      const result = mintQuantity === 1 
+        ? await mintService.mintGecko(wallet)
+        : await mintService.mintMultipleGeckos(wallet, mintQuantity)
       
       notifications.removeNotification(loadingId)
       
@@ -126,9 +129,29 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
         if (result.lotteryWon) {
           setShowLotteryWin(true)
           setTimeout(() => setShowLotteryWin(false), 10000)
-          notifications.showLotteryWin(result.totalGeckos || 3, result.solReceived || 0.98)
+          
+          if (result.lotteryWinners && result.lotteryWinners.length > 1) {
+            // Multiple lottery wins in bulk mint
+            notifications.addNotification(
+              'success',
+              `🎉 MULTIPLE LOTTERY WINS! 🎉`,
+              `You won ${result.lotteryWinners.length} lotteries! +${result.totalLotteryWinnings} SOL + ${result.totalGeckos} total geckos!`,
+              8000
+            )
+          } else {
+            notifications.showLotteryWin(result.totalGeckos || 3, result.solReceived || 0.98)
+          }
         } else {
-          notifications.showMintSuccess(result.geckoId || 0)
+          if (mintQuantity > 1) {
+            notifications.addNotification(
+              'success',
+              `🦎 Successfully minted ${mintQuantity} geckos!`,
+              `Your ${mintQuantity} geckos have been added to your wallet. No lottery wins this time, but hey, you've got some sweet JPEGs!`,
+              5000
+            )
+          } else {
+            notifications.showMintSuccess(result.geckoId || 0)
+          }
         }
         
         // Refresh balance
@@ -154,9 +177,10 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
     }
   }
 
-  const totalCost = MINT_CONFIG.PRICE_SOL
+  const totalCost = MINT_CONFIG.PRICE_SOL * mintQuantity
   const canAfford = userBalance >= totalCost
   const soldOut = (realMintStats.availableGeckos || 0) === 0
+  const maxQuantity = Math.min(10, realMintStats.availableGeckos || 0) // Max 10 or available geckos
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -267,14 +291,45 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
           </div>
         </div>
 
+        {/* Quantity Selector */}
+        <div className="mb-6">
+          <div className="text-center mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              How many geckos? (Each has individual lottery chance!)
+            </label>
+            <div className="flex items-center justify-center space-x-4">
+              <select
+                value={mintQuantity}
+                onChange={(e) => setMintQuantity(Math.min(parseInt(e.target.value), maxQuantity))}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white text-gray-900 font-medium"
+                disabled={soldOut || maxQuantity === 0}
+              >
+                {Array.from({ length: maxQuantity }, (_, i) => i + 1).map((num) => (
+                  <option key={num} value={num}>
+                    {num} gecko{num > 1 ? 's' : ''}
+                  </option>
+                ))}
+              </select>
+              <div className="text-sm text-gray-500">
+                Max: {maxQuantity}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Mint Price Display */}
         <div className="mb-6 text-center">
           <div className="text-sm text-gray-600 mb-2">
-            Mint Price
+            {mintQuantity === 1 ? 'Mint Price' : `Total Cost (${mintQuantity} geckos)`}
           </div>
           <div className="text-2xl font-bold text-gray-900">
-            {MINT_CONFIG.PRICE_SOL} SOL
+            {totalCost.toFixed(4)} SOL
           </div>
+          {mintQuantity > 1 && (
+            <div className="text-sm text-gray-500">
+              {MINT_CONFIG.PRICE_SOL} SOL each × {mintQuantity}
+            </div>
+          )}
           <div className="text-sm text-gray-500 mt-1">
             Available Geckos: {realMintStats.availableGeckos || 'Loading...'}
           </div>
@@ -300,7 +355,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                 <div>
                   Your balance: {userBalance.toFixed(4)} SOL {!canAfford && '(not enough, but we appreciate the effort)'}
                 </div>
-                {environment.isDevnet && userBalance < MINT_CONFIG.PRICE_SOL && (
+                {environment.isDevnet && userBalance < totalCost && (
                   <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
                     <p className="text-yellow-700 font-semibold">🧪 DEVNET TIP:</p>
                     <p className="text-yellow-600">
@@ -332,14 +387,22 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                 {isMinting ? (
                   <div className="flex items-center justify-center space-x-2">
                     <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
-                    <span>Minting Your Gecko...</span>
+                    <span>
+                      {mintQuantity === 1 
+                        ? 'Minting Your Gecko...' 
+                        : `Minting ${mintQuantity} Geckos...`}
+                    </span>
                   </div>
                 ) : !canAfford ? (
                   `Need ${totalCost.toFixed(4)} SOL (Go get more!)`
                 ) : (
                   <div className="flex items-center justify-center space-x-2">
                     <span>🦎</span>
-                    <span>Mint Gecko for {MINT_CONFIG.PRICE_SOL} SOL</span>
+                    <span>
+                      {mintQuantity === 1 
+                        ? `Mint Gecko for ${MINT_CONFIG.PRICE_SOL} SOL`
+                        : `Mint ${mintQuantity} Geckos for ${totalCost.toFixed(4)} SOL`}
+                    </span>
                   </div>
                 )}
               </motion.button>
@@ -363,7 +426,9 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
             <div className="flex items-center justify-center space-x-2 text-primary-700">
               <Zap className="w-5 h-5" />
               <span className="font-bold">
-                🚨 LOTTERY ALERT: {lotteryWinnersLeft} more winners can still win {MINT_CONFIG.LOTTERY_PRIZE_SOL} SOL + 3 geckos! (Could be you... probably not, but could be!)
+                🚨 LOTTERY ALERT: {lotteryWinnersLeft} more winners can still win {MINT_CONFIG.LOTTERY_PRIZE_SOL} SOL + 3 geckos each! 
+                {mintQuantity > 1 && ` With ${mintQuantity} geckos, you have ${mintQuantity} chances to win!`}
+                {mintQuantity === 1 && ` (Could be you... probably not, but could be!)`}
               </span>
             </div>
           </motion.div>
@@ -377,13 +442,12 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
             animate={{ opacity: 1, y: 0 }}
           >
             <h4 className="font-bold text-green-800 mb-2 flex items-center">
-              🎉 Mint Successful!
+              🎉 {mintResult.mintedGeckos?.length > 1 
+                ? `Bulk Mint Successful! (${mintResult.mintedGeckos.length} geckos)`
+                : 'Mint Successful!'}
             </h4>
             <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Gecko ID:</span>
-                <span className="font-bold text-gray-800">#{mintResult.geckoId}</span>
-              </div>
+              {/* Transaction Info */}
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Transaction:</span>
                 <div className="flex items-center space-x-2">
@@ -393,13 +457,45 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                   <ExternalLink className="w-4 h-4 text-gray-400" />
                 </div>
               </div>
-              {mintResult.lotteryWon && (
-                <div className="p-3 bg-gradient-to-r from-yellow-100 to-yellow-200 border border-yellow-300 rounded-lg">
-                  <span className="text-yellow-800 font-bold">
-                    🏆 LOTTERY WINNER: +{mintResult.solReceived} SOL + {mintResult.totalGeckos} Geckos Total!
-                  </span>
+
+              {/* Bulk mint summary */}
+              {mintResult.mintedGeckos?.length > 1 ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Geckos Minted:</span>
+                    <span className="font-bold text-gray-800">{mintResult.mintedGeckos.length}</span>
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    Gecko IDs: {mintResult.mintedGeckos.map(g => `#${g.id}`).join(', ')}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Gecko ID:</span>
+                  <span className="font-bold text-gray-800">#{mintResult.geckoId}</span>
                 </div>
               )}
+
+              {/* Lottery results */}
+              {mintResult.lotteryWon && (
+                <div className="p-3 bg-gradient-to-r from-yellow-100 to-yellow-200 border border-yellow-300 rounded-lg">
+                  {mintResult.lotteryWinners?.length > 1 ? (
+                    <div className="text-yellow-800 font-bold">
+                      🏆 MULTIPLE LOTTERY WINS! 🏆<br/>
+                      <span className="text-sm">
+                        Winners: {mintResult.lotteryWinners.map(id => `#${id}`).join(', ')}<br/>
+                        Total winnings: +{mintResult.totalLotteryWinnings} SOL + {mintResult.totalGeckos} Geckos Total!
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-yellow-800 font-bold">
+                      🏆 LOTTERY WINNER: +{mintResult.solReceived} SOL + {mintResult.totalGeckos} Geckos Total!
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Display first gecko (or only gecko for single mints) */}
               {mintResult.geckoData && (
                 <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
@@ -410,9 +506,18 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                     />
                     <div>
                       <h4 className="font-bold text-gray-900">{mintResult.geckoData.name}</h4>
-                      <p className="text-sm text-gray-600">Your new gecko companion!</p>
+                      <p className="text-sm text-gray-600">
+                        {mintResult.mintedGeckos?.length > 1 
+                          ? `First of your ${mintResult.mintedGeckos.length} new geckos!`
+                          : 'Your new gecko companion!'}
+                      </p>
                     </div>
                   </div>
+                  {mintResult.mintedGeckos?.length > 1 && (
+                    <div className="mt-2 text-xs text-gray-500">
+                      + {mintResult.mintedGeckos.length - 1} more gecko{mintResult.mintedGeckos.length > 2 ? 's' : ''} in your wallet!
+                    </div>
+                  )}
                 </div>
               )}
             </div>

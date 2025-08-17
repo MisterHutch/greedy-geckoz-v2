@@ -26,6 +26,10 @@ interface MintResult {
   totalGeckos?: number
   solReceived?: number
   error?: string
+  // For bulk minting
+  mintedGeckos?: GeckoData[]
+  lotteryWinners?: number[]
+  totalLotteryWinnings?: number
 }
 
 interface LotteryState {
@@ -267,6 +271,133 @@ class GeckoMintService {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Mint failed'
+      }
+    }
+  }
+
+  async mintMultipleGeckos(wallet: WalletContextState, quantity: number): Promise<MintResult> {
+    try {
+      if (!wallet.connected || !wallet.publicKey || !wallet.signTransaction) {
+        throw new Error('Wallet not connected')
+      }
+
+      if (quantity < 1 || quantity > 10) {
+        throw new Error('Quantity must be between 1 and 10')
+      }
+
+      // Check if we have enough geckos available
+      const available = this.getAvailableGeckos()
+      if (available.length < quantity) {
+        throw new Error(`Only ${available.length} geckos available, you requested ${quantity}`)
+      }
+
+      // Check user balance for total cost
+      const balance = await this.connection.getBalance(wallet.publicKey)
+      const balanceSOL = balance / LAMPORTS_PER_SOL
+      const totalCost = MINT_CONFIG.PRICE_SOL * quantity
+      
+      if (balanceSOL < totalCost) {
+        throw new Error(`Insufficient balance. Need ${totalCost} SOL`)
+      }
+
+      // Create payment transaction for total amount
+      let treasuryPubkey: PublicKey
+      try {
+        treasuryPubkey = new PublicKey(this.treasuryAddress)
+      } catch (error) {
+        throw new Error(`Invalid treasury address: ${this.treasuryAddress}`)
+      }
+      
+      const paymentTransaction = await this.createPaymentTransaction(
+        wallet.publicKey,
+        treasuryPubkey,
+        totalCost
+      )
+
+      // Sign and send payment transaction
+      console.log(`Requesting wallet signature for ${quantity} geckos (${totalCost} SOL)...`)
+      const signedTransaction = await wallet.signTransaction(paymentTransaction)
+      
+      console.log('Sending payment transaction...')
+      const txHash = await this.connection.sendRawTransaction(signedTransaction.serialize(), {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed'
+      })
+
+      // Wait for confirmation
+      console.log('Confirming transaction...', txHash)
+      await this.connection.confirmTransaction(txHash, 'confirmed')
+      
+      console.log('Payment confirmed! Processing bulk mint...')
+
+      // Now mint each gecko individually and check lottery for each
+      const mintedGeckos: GeckoData[] = []
+      const lotteryWinners: number[] = []
+      let totalLotteryWinnings = 0
+      let totalGeckosReceived = 0
+
+      for (let i = 0; i < quantity; i++) {
+        // Select random gecko for this mint
+        const selectedGecko = this.selectRandomGecko()
+        if (!selectedGecko) {
+          console.warn(`Could not select gecko for mint ${i + 1}`)
+          continue
+        }
+
+        // Mark as minted
+        this.mintedGeckos.add(selectedGecko.id)
+        this.lotteryState.totalMinted++
+        mintedGeckos.push(selectedGecko)
+        totalGeckosReceived++
+
+        // Check lottery for this individual mint
+        const isWinner = this.isLotteryWinner()
+        
+        if (isWinner) {
+          this.lotteryState.winnersCount++
+          this.lotteryState.winners.push(selectedGecko.id)
+          lotteryWinners.push(selectedGecko.id)
+          
+          // Lottery winner gets 3 total geckos for this winning mint
+          totalGeckosReceived += 2 // Add 2 more (they already got 1)
+          totalLotteryWinnings += MINT_CONFIG.LOTTERY_PRIZE_SOL
+
+          // Select 2 additional random geckos for the winner
+          for (let j = 0; j < 2; j++) {
+            const additionalGecko = this.selectRandomGecko()
+            if (additionalGecko) {
+              this.mintedGeckos.add(additionalGecko.id)
+              mintedGeckos.push(additionalGecko)
+            }
+          }
+
+          console.log(`🎉 LOTTERY WINNER on mint ${i + 1}! Gecko #${selectedGecko.id}`)
+        }
+      }
+
+      this.saveMintState()
+
+      const hasLotteryWins = lotteryWinners.length > 0
+
+      return {
+        success: true,
+        txHash,
+        mintedGeckos,
+        lotteryWon: hasLotteryWins,
+        lotteryWinners,
+        totalGeckos: totalGeckosReceived,
+        solReceived: totalLotteryWinnings,
+        totalLotteryWinnings,
+        // For backwards compatibility
+        geckoId: mintedGeckos[0]?.id,
+        geckoData: mintedGeckos[0]
+      }
+
+    } catch (error) {
+      console.error('Bulk mint error:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Bulk mint failed'
       }
     }
   }
