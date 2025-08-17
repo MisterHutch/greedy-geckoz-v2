@@ -451,10 +451,17 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Transaction:</span>
                 <div className="flex items-center space-x-2">
-                  <span className="font-mono text-xs text-gray-800">
-                    {mintResult.txHash?.slice(0, 8)}...{mintResult.txHash?.slice(-8)}
-                  </span>
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
+                  <a
+                    href={`https://solscan.io/tx/${mintResult.txHash}${environment.isDevnet ? '?cluster=devnet' : ''}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-2 hover:text-primary-600 transition-colors"
+                  >
+                    <span className="font-mono text-xs text-gray-800 hover:text-primary-600">
+                      {mintResult.txHash?.slice(0, 8)}...{mintResult.txHash?.slice(-8)}
+                    </span>
+                    <ExternalLink className="w-4 h-4 text-gray-400 hover:text-primary-600" />
+                  </a>
                 </div>
               </div>
 
@@ -520,6 +527,17 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                   )}
                 </div>
               )}
+
+              {/* NFT Delivery Notice */}
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center space-x-2 text-blue-800 mb-2">
+                  <span className="font-semibold">📦 NFT Delivery Status:</span>
+                </div>
+                <p className="text-xs text-blue-700">
+                  Your SOL payment has been processed successfully! 🎉<br/>
+                  <strong>NFT minting is currently in development.</strong> Your geckos will be delivered to your wallet once the Metaplex NFT minting system is implemented.
+                </p>
+              </div>
             </div>
           </motion.div>
         )}
