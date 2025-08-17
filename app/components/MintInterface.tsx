@@ -735,15 +735,50 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                 </div>
               )}
 
-              {/* NFT Delivery Notice */}
+              {/* NFT Delivery Status */}
               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center space-x-2 text-blue-800 mb-2">
-                  <span className="font-semibold">📦 NFT Delivery Status:</span>
+                  <span className="font-semibold">🦎 NFT Status:</span>
                 </div>
-                <p className="text-xs text-blue-700">
-                  Your SOL payment has been processed successfully! 🎉<br/>
-                  <strong>NFT minting is currently in development.</strong> Your geckos will be delivered to your wallet once the Metaplex NFT minting system is implemented.
-                </p>
+                {mintResult.nftMintResults && mintResult.nftMintResults.length > 0 ? (
+                  <div className="space-y-2">
+                    <p className="text-xs text-green-700 font-semibold">
+                      ✅ NFTs minted successfully! Check your wallet.
+                    </p>
+                    {mintResult.nftMintResults.map((nft, index) => (
+                      <div key={index} className="text-xs text-gray-700">
+                        {nft.success ? (
+                          <div className="flex items-center space-x-2">
+                            <span>🎨 NFT #{index + 1}:</span>
+                            <a 
+                              href={`https://solscan.io/token/${nft.mintAddress}${environment.isDevnet ? '?cluster=devnet' : ''}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 underline font-mono text-xs"
+                            >
+                              {nft.mintAddress?.slice(0, 8)}...{nft.mintAddress?.slice(-6)}
+                            </a>
+                          </div>
+                        ) : (
+                          <p className="text-red-600">❌ NFT #{index + 1} failed: {nft.error}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs space-y-2">
+                    <p className="text-blue-700">
+                      Your SOL payment was successful! 🎉
+                    </p>
+                    <div className="p-2 bg-yellow-50 border border-yellow-200 rounded">
+                      <p className="text-yellow-800 font-semibold">⚠️ NFT System Status:</p>
+                      <p className="text-yellow-700 text-xs mt-1">
+                        Metaplex NFT minting is implemented but requires collection deployment.<br/>
+                        Contact admin to complete setup with treasury wallet private key.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>

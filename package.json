@@ -10,9 +10,13 @@
     "start": "next start",
     "lint": "next lint",
     "upload-geckos": "ts-node scripts/upload-geckos.ts",
-    "test-upload": "ts-node scripts/test-upload.ts"
+    "test-upload": "ts-node scripts/test-upload.ts",
+    "deploy-collection": "ts-node scripts/deploy-collection.ts"
   },
   "dependencies": {
+    "@metaplex-foundation/js": "^0.20.1",
+    "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
+    "@solana/spl-token": "^0.4.13",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-react": "^0.15.35",
     "@solana/wallet-adapter-react-ui": "^0.9.34",

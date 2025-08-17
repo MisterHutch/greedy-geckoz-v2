@@ -1,6 +1,8 @@
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL, sendAndConfirmTransaction } from '@solana/web3.js'
 import { WalletContextState } from '@solana/wallet-adapter-react'
 import collectionData from '../../public/data/collection-2025.json'
+import MetaplexNFTService, { NFTMintResult } from '../metaplex/nft-service'
+import GenerativeMintService from '../generative/generative-mint-service'
 
 export const MINT_CONFIG = {
   PRICE_SOL: 0.0169,
@@ -30,6 +32,10 @@ interface MintResult {
   mintedGeckos?: GeckoData[]
   lotteryWinners?: number[]
   totalLotteryWinnings?: number
+  // For NFT minting
+  nftMintResults?: NFTMintResult[]
+  nftMintAddress?: string
+  nftTxSignature?: string
 }
 
 interface LotteryState {
@@ -43,6 +49,8 @@ class GeckoMintService {
   private treasuryAddress: string
   private lotteryState: LotteryState
   private mintedGeckos: Set<number>
+  private nftService: MetaplexNFTService
+  private generativeService: GenerativeMintService
 
   constructor(connection: Connection, treasuryAddress?: string) {
     this.connection = connection
@@ -53,6 +61,19 @@ class GeckoMintService {
       winners: []
     }
     this.mintedGeckos = new Set<number>()
+    
+    // Initialize NFT service
+    this.nftService = new MetaplexNFTService(connection)
+    
+    // Set collection address from environment variables if available
+    const collectionAddress = process.env.NEXT_PUBLIC_COLLECTION_NFT_ADDRESS
+    if (collectionAddress && collectionAddress !== 'YOUR_COLLECTION_NFT_ADDRESS') {
+      this.nftService.setCollectionAddress(collectionAddress)
+      console.log('Collection address set:', collectionAddress)
+    } else {
+      console.log('No collection address configured - NFTs will be created without collection verification')
+    }
+    
     this.loadMintState()
   }
 
@@ -256,6 +277,32 @@ class GeckoMintService {
 
       this.saveMintState()
 
+      // Step 4: Create actual NFT after successful SOL payment
+      console.log('Payment confirmed! Now minting actual NFT...')
+      let nftMintResult: NFTMintResult | undefined
+      
+      try {
+        nftMintResult = await this.nftService.mintGeckoNFT(wallet, {
+          id: selectedGecko.id,
+          name: selectedGecko.name,
+          image: selectedGecko.image,
+          metadata: selectedGecko.metadata,
+          available: selectedGecko.available
+        })
+        
+        if (nftMintResult.success) {
+          console.log(`✅ NFT minted successfully: ${nftMintResult.mintAddress}`)
+        } else {
+          console.error('❌ NFT minting failed:', nftMintResult.error)
+        }
+      } catch (error) {
+        console.error('NFT minting error:', error)
+        nftMintResult = {
+          success: false,
+          error: error instanceof Error ? error.message : 'NFT minting failed'
+        }
+      }
+
       return {
         success: true,
         geckoId: selectedGecko.id,
@@ -263,7 +310,10 @@ class GeckoMintService {
         txHash,
         lotteryWon: isWinner,
         totalGeckos,
-        solReceived
+        solReceived,
+        nftMintAddress: nftMintResult?.mintAddress,
+        nftTxSignature: nftMintResult?.txSignature,
+        nftMintResults: nftMintResult ? [nftMintResult] : undefined
       }
 
     } catch (error) {
@@ -377,6 +427,35 @@ class GeckoMintService {
 
       this.saveMintState()
 
+      // Step 4: Create actual NFTs for all minted geckos
+      console.log(`Payment confirmed! Now minting ${mintedGeckos.length} actual NFTs...`)
+      const nftMintResults: NFTMintResult[] = []
+      
+      try {
+        const nftResults = await this.nftService.mintMultipleGeckoNFTs(
+          wallet,
+          mintedGeckos.map(gecko => ({
+            id: gecko.id,
+            name: gecko.name,
+            image: gecko.image,
+            metadata: gecko.metadata,
+            available: gecko.available
+          }))
+        )
+        
+        nftResults.forEach((result, index) => {
+          if (result.success) {
+            console.log(`✅ NFT ${index + 1} minted successfully: ${result.mintAddress}`)
+          } else {
+            console.error(`❌ NFT ${index + 1} minting failed:`, result.error)
+          }
+        })
+        
+        nftMintResults.push(...nftResults)
+      } catch (error) {
+        console.error('Bulk NFT minting error:', error)
+      }
+
       const hasLotteryWins = lotteryWinners.length > 0
 
       return {
@@ -388,6 +467,9 @@ class GeckoMintService {
         totalGeckos: totalGeckosReceived,
         solReceived: totalLotteryWinnings,
         totalLotteryWinnings,
+        nftMintResults,
+        nftMintAddress: nftMintResults[0]?.mintAddress,
+        nftTxSignature: nftMintResults[0]?.txSignature,
         // For backwards compatibility
         geckoId: mintedGeckos[0]?.id,
         geckoData: mintedGeckos[0]
