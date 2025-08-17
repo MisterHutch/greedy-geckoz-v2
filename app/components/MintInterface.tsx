@@ -28,6 +28,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
   const [userBalance, setUserBalance] = useState(0)
   const [mintResult, setMintResult] = useState<any>(null)
   const [showLotteryWin, setShowLotteryWin] = useState(false)
+  const [showMintPopup, setShowMintPopup] = useState(false)
   const [mintService, setMintService] = useState<GeckoMintService | null>(null)
   const [realMintStats, setRealMintStats] = useState(mintStats)
   const [mintQuantity, setMintQuantity] = useState(1)
@@ -126,6 +127,9 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
         
         setMintResult(result)
         
+        // Show the detailed mint popup
+        setShowMintPopup(true)
+        
         if (result.lotteryWon) {
           setShowLotteryWin(true)
           setTimeout(() => setShowLotteryWin(false), 10000)
@@ -218,6 +222,209 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
               >
                 Amazing! 🚀
               </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Trippy Mint Results Popup */}
+      <AnimatePresence>
+        {showMintPopup && mintResult && (
+          <motion.div
+            className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={(e) => e.target === e.currentTarget && setShowMintPopup(false)}
+          >
+            <motion.div
+              className="bg-gradient-to-br from-purple-900 via-pink-900 to-blue-900 rounded-2xl p-8 max-w-2xl w-full shadow-2xl border-4 border-primary-500 relative overflow-hidden"
+              initial={{ scale: 0.5, rotate: -5 }}
+              animate={{ scale: 1, rotate: 0 }}
+              exit={{ scale: 0.5, rotate: 5 }}
+            >
+              {/* Trippy Background Animation */}
+              <div className="absolute inset-0 opacity-20">
+                <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-r from-yellow-400 to-pink-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+                <div className="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-r from-purple-400 to-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-gradient-to-r from-green-400 to-cyan-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-500"></div>
+              </div>
+
+              {/* Close Button */}
+              <button
+                onClick={() => setShowMintPopup(false)}
+                className="absolute top-4 right-4 text-white/80 hover:text-white text-2xl font-bold z-10"
+              >
+                ✕
+              </button>
+
+              {/* Header */}
+              <div className="relative z-10 text-center mb-6">
+                <motion.div
+                  className="text-6xl mb-2"
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  🦎
+                </motion.div>
+                <h2 className="text-3xl font-bold text-white mb-2">
+                  {mintResult.lotteryWon ? "🎰 HOLY GECKO! YOU WON!" : "🦎 GECKO ACQUIRED!"}
+                </h2>
+                <p className="text-white/80 text-lg">
+                  {mintResult.lotteryWon 
+                    ? "The gecko gods have blessed your degen soul!" 
+                    : "Another overpriced JPEG added to your collection!"}
+                </p>
+              </div>
+
+              {/* Main Content */}
+              <div className="relative z-10 space-y-6">
+                {/* Gecko Display */}
+                <div className="flex flex-col lg:flex-row gap-6 items-start">
+                  {/* Gecko Image and Info */}
+                  <div className="flex-1">
+                    {mintResult.geckoData && (
+                      <div className="bg-black/40 rounded-xl p-4 border border-primary-500/30">
+                        <div className="flex items-center space-x-4 mb-4">
+                          <div className="relative">
+                            <img
+                              src={mintResult.geckoData.image}
+                              alt={mintResult.geckoData.name}
+                              className="w-20 h-20 rounded-lg object-cover border-2 border-primary-500"
+                            />
+                            <div className="absolute -top-2 -right-2 bg-primary-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                              #{mintResult.geckoId}
+                            </div>
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-white">{mintResult.geckoData.name}</h3>
+                            <p className="text-primary-300 text-sm">Your new degen companion</p>
+                            {mintResult.mintedGeckos?.length > 1 && (
+                              <p className="text-yellow-300 text-xs mt-1">
+                                + {mintResult.mintedGeckos.length - 1} more gecko{mintResult.mintedGeckos.length > 2 ? 's' : ''}!
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Gecko Characteristics */}
+                        <div className="space-y-2 text-sm">
+                          <div className="text-white/80 font-semibold mb-2">🧬 Degen Traits:</div>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className="bg-white/10 px-2 py-1 rounded">
+                              <span className="text-gray-300">Rarity:</span> <span className="text-white font-semibold">Epic Degen</span>
+                            </div>
+                            <div className="bg-white/10 px-2 py-1 rounded">
+                              <span className="text-gray-300">Vibes:</span> <span className="text-white font-semibold">Trippy AF</span>
+                            </div>
+                            <div className="bg-white/10 px-2 py-1 rounded">
+                              <span className="text-gray-300">Power Level:</span> <span className="text-white font-semibold">Over 9000</span>
+                            </div>
+                            <div className="bg-white/10 px-2 py-1 rounded">
+                              <span className="text-gray-300">Hopium:</span> <span className="text-white font-semibold">Maximum</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Transaction Details */}
+                  <div className="flex-1">
+                    <div className="bg-black/40 rounded-xl p-4 border border-primary-500/30 space-y-3">
+                      <div className="text-white/80 font-semibold mb-3">📊 Degen Stats:</div>
+                      
+                      {/* Amount Spent */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300">SOL Yeeted:</span>
+                        <span className="text-white font-bold">{totalCost.toFixed(4)} SOL</span>
+                      </div>
+
+                      {/* Quantity */}
+                      {mintQuantity > 1 && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-300">Geckos Minted:</span>
+                          <span className="text-white font-bold">{mintQuantity}</span>
+                        </div>
+                      )}
+
+                      {/* Lottery Status */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300">Lottery Status:</span>
+                        <span className={`font-bold ${mintResult.lotteryWon ? 'text-yellow-400' : 'text-red-400'}`}>
+                          {mintResult.lotteryWon ? '🎰 WINNER!' : '💸 REKT'}
+                        </span>
+                      </div>
+
+                      {/* Lottery Winnings */}
+                      {mintResult.lotteryWon && (
+                        <div className="bg-yellow-900/30 border border-yellow-500/50 rounded-lg p-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-yellow-300">SOL Won:</span>
+                            <span className="text-yellow-400 font-bold">+{mintResult.solReceived || mintResult.totalLotteryWinnings} SOL</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-yellow-300">Total Geckos:</span>
+                            <span className="text-yellow-400 font-bold">{mintResult.totalGeckos}</span>
+                          </div>
+                          {mintResult.lotteryWinners?.length > 1 && (
+                            <div className="text-xs text-yellow-200 mt-1">
+                              Multiple wins: {mintResult.lotteryWinners.map(id => `#${id}`).join(', ')}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Transaction Link */}
+                      <div className="pt-2 border-t border-white/20">
+                        <span className="text-gray-300 text-sm">Transaction:</span>
+                        <div className="mt-1">
+                          <a
+                            href={`https://solscan.io/tx/${mintResult.txHash}${environment.isDevnet ? '?cluster=devnet' : ''}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 px-3 py-2 rounded-lg transition-colors group"
+                          >
+                            <span className="font-mono text-xs text-white">
+                              {mintResult.txHash?.slice(0, 12)}...{mintResult.txHash?.slice(-8)}
+                            </span>
+                            <ExternalLink className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sarcastic Footer */}
+                <div className="text-center text-white/60 text-sm italic">
+                  {mintResult.lotteryWon 
+                    ? "Congrats! You beat the odds and won something actually valuable. Don't spend it all on more JPEGs... wait, you probably will. 🤡"
+                    : "Welcome to the club of people who pay real money for cartoon lizards. Your mom would be so proud! 🦎💸"}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                  <button
+                    onClick={() => setShowMintPopup(false)}
+                    className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  >
+                    Close & Cope 😎
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (mintQuantity < maxQuantity && userBalance >= totalCost) {
+                        setShowMintPopup(false)
+                        // User can mint more
+                      }
+                    }}
+                    disabled={mintQuantity >= maxQuantity || userBalance < totalCost}
+                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                  >
+                    {userBalance < totalCost ? 'Need More SOL 💸' : 'Mint More JPEGs 🦎'}
+                  </button>
+                </div>
+              </div>
             </motion.div>
           </motion.div>
         )}
