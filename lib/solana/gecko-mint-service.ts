@@ -46,7 +46,7 @@ class GeckoMintService {
 
   constructor(connection: Connection, treasuryAddress?: string) {
     this.connection = connection
-    this.treasuryAddress = treasuryAddress || '3vZ7k6WqYBBEdBYLjp1Vw7TXRDNcAWvH8vGkqcEA3hYR' // Valid Solana address
+    this.treasuryAddress = treasuryAddress || 'Cs3etBd1Mw9xptSgFZFmcK41PALcm1XHX6yHmS5HsPLY' // Geckoz treasury wallet
     this.lotteryState = {
       winnersCount: 0,
       totalMinted: 0,

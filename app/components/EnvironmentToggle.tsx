@@ -164,10 +164,10 @@ export const useEnvironment = () => {
   }
 
   const getTreasuryAddress = () => {
-    // Use a valid Solana mainnet address (this is the Solana Foundation's address, replace with yours)
+    // Geckoz treasury wallet - collects mint fees and pays out lottery winnings
     return environment === 'mainnet'
-      ? process.env.NEXT_PUBLIC_TREASURY_WALLET || '3vZ7k6WqYBBEdBYLjp1Vw7TXRDNcAWvH8vGkqcEA3hYR'
-      : '3vZ7k6WqYBBEdBYLjp1Vw7TXRDNcAWvH8vGkqcEA3hYR' // Same address for testing
+      ? process.env.NEXT_PUBLIC_TREASURY_WALLET || 'Cs3etBd1Mw9xptSgFZFmcK41PALcm1XHX6yHmS5HsPLY'
+      : 'Cs3etBd1Mw9xptSgFZFmcK41PALcm1XHX6yHmS5HsPLY' // Same address for devnet testing
   }
 
   return {
