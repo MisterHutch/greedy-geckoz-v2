@@ -49,16 +49,34 @@ input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.1);
 }
 
-/* Force cursor to always be on top */
+/* Force cursor to always be on top and visible */
 * {
   cursor: inherit !important;
+  z-index: auto;
 }
 
 body {
-  cursor: default;
+  cursor: default !important;
 }
 
-button, a, [role="button"] {
+/* Ensure cursor is always visible on interactive elements */
+button, a, [role="button"], input, select, textarea {
+  cursor: pointer !important;
+}
+
+/* Override fly cursor in popups and modals */
+.fixed, [class*="fixed"], [class*="modal"], [class*="popup"] {
+  cursor: default !important;
+}
+
+.fixed *, [class*="fixed"] *, [class*="modal"] *, [class*="popup"] * {
+  cursor: inherit !important;
+}
+
+.fixed button, .fixed a, .fixed [role="button"],
+[class*="fixed"] button, [class*="fixed"] a, [class*="fixed"] [role="button"],
+[class*="modal"] button, [class*="modal"] a, [class*="modal"] [role="button"],
+[class*="popup"] button, [class*="popup"] a, [class*="popup"] [role="button"] {
   cursor: pointer !important;
 }
 
@@ -493,13 +511,33 @@ input[type="number"] {
   }
 }
 
-/* Fly cursor animation */
+/* Fly cursor animation - DISABLED to ensure cursor visibility */
 .fly-cursor {
-  cursor: none;
+  /* cursor: none; - Commented out to keep cursor visible */
+  cursor: default !important;
 }
 
 .fly-cursor * {
-  cursor: none !important;
+  /* cursor: none !important; - Commented out to keep cursor visible */
+  cursor: inherit !important;
+}
+
+/* Force cursor visibility on high z-index elements */
+[class*="z-50"], [class*="z-[50]"], [class*="z-40"], [class*="z-[40]"], 
+[class*="z-30"], [class*="z-[30]"], [class*="z-9999"], [class*="z-[9999]"] {
+  cursor: default !important;
+}
+
+[class*="z-50"] *, [class*="z-[50]"] *, [class*="z-40"] *, [class*="z-[40]"] *, 
+[class*="z-30"] *, [class*="z-[30]"] *, [class*="z-9999"] *, [class*="z-[9999]"] * {
+  cursor: inherit !important;
+}
+
+[class*="z-50"] button, [class*="z-[50]"] button, [class*="z-40"] button, [class*="z-[40]"] button,
+[class*="z-30"] button, [class*="z-[30]"] button, [class*="z-9999"] button, [class*="z-[9999]"] button,
+[class*="z-50"] a, [class*="z-[50]"] a, [class*="z-40"] a, [class*="z-[40]"] a,
+[class*="z-30"] a, [class*="z-[30]"] a, [class*="z-9999"] a, [class*="z-[9999]"] a {
+  cursor: pointer !important;
 }
 
 .custom-fly-cursor {
