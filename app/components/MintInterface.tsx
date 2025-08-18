@@ -17,7 +17,7 @@ interface MintInterfaceProps {
     lotteryWinnersCount: number
     lotteryWinnersRemaining: number
     lotteryPool: number
-    availableGeckos?: number
+    availableGeckoz?: number
   }
 }
 
@@ -96,7 +96,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
       return
     }
 
-    if ((realMintStats.availableGeckos || 0) === 0) {
+    if ((realMintStats.availableGeckoz || 0) === 0) {
       notifications.showSoldOut()
       return
     }
@@ -139,7 +139,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
             notifications.addNotification(
               'success',
               `🎉 MULTIPLE LOTTERY WINS! 🎉`,
-              `You won ${result.lotteryWinners.length} lotteries! +${result.totalLotteryWinnings} SOL + ${result.totalGeckos} total geckos!`,
+              `You won ${result.lotteryWinners.length} lotteries! +${result.totalLotteryWinnings} SOL + ${result.totalGeckos} total geckoz!`,
               8000
             )
           } else {
@@ -149,8 +149,8 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
           if (mintQuantity > 1) {
             notifications.addNotification(
               'success',
-              `🦎 Successfully minted ${mintQuantity} geckos!`,
-              `Your ${mintQuantity} geckos have been added to your wallet. No lottery wins this time, but hey, you've got some sweet JPEGs!`,
+              `🦎 Successfully minted ${mintQuantity} geckoz!`,
+              `Your ${mintQuantity} geckoz have been added to your wallet. No lottery wins this time, but hey, you've got some sweet JPEGs!`,
               5000
             )
           } else {
@@ -183,8 +183,8 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
 
   const totalCost = MINT_CONFIG.PRICE_SOL * mintQuantity
   const canAfford = userBalance >= totalCost
-  const soldOut = (realMintStats.availableGeckos || 0) === 0
-  const maxQuantity = Math.min(10, realMintStats.availableGeckos || 0) // Max 10 or available geckos
+  const soldOut = (realMintStats.availableGeckoz || 0) === 0
+  const maxQuantity = Math.min(10, realMintStats.availableGeckoz || 0) // Max 10 or available geckoz
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -288,7 +288,10 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                         <div className="flex items-center space-x-4 mb-4">
                           <div className="relative">
                             <img
-                              src={mintResult.geckoData.image}
+                              src={mintResult.imageIpfsHash ? 
+                                `https://gateway.pinata.cloud/ipfs/${mintResult.imageIpfsHash}` : 
+                                mintResult.geckoData.image
+                              }
                               alt={mintResult.geckoData.name}
                               className="w-20 h-20 rounded-lg object-cover border-2 border-primary-500"
                             />
@@ -309,21 +312,46 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                         
                         {/* Gecko Characteristics */}
                         <div className="space-y-2 text-sm">
-                          <div className="text-white/80 font-semibold mb-2">🧬 Degen Traits:</div>
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div className="bg-white/10 px-2 py-1 rounded">
-                              <span className="text-gray-300">Rarity:</span> <span className="text-white font-semibold">Epic Degen</span>
-                            </div>
-                            <div className="bg-white/10 px-2 py-1 rounded">
-                              <span className="text-gray-300">Vibes:</span> <span className="text-white font-semibold">Trippy AF</span>
-                            </div>
-                            <div className="bg-white/10 px-2 py-1 rounded">
-                              <span className="text-gray-300">Power Level:</span> <span className="text-white font-semibold">Over 9000</span>
-                            </div>
-                            <div className="bg-white/10 px-2 py-1 rounded">
-                              <span className="text-gray-300">Hopium:</span> <span className="text-white font-semibold">Maximum</span>
-                            </div>
+                          <div className="text-white/80 font-semibold mb-2">
+                            🧬 Generated Traits:
+                            {mintResult.rarityScore && (
+                              <span className="ml-2 text-xs bg-primary-500 px-2 py-1 rounded-full">
+                                Score: {mintResult.rarityScore}
+                              </span>
+                            )}
+                            {mintResult.isUltraRare && (
+                              <span className="ml-2 text-xs bg-yellow-500 text-black px-2 py-1 rounded-full font-bold">
+                                ⭐ ULTRA RARE!
+                              </span>
+                            )}
                           </div>
+                          {mintResult.generatedTraits ? (
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              {Object.entries(mintResult.generatedTraits).map(([category, trait]) => (
+                                trait !== 'None' && (
+                                  <div key={category} className="bg-white/10 px-2 py-1 rounded">
+                                    <span className="text-gray-300">{category}:</span>{' '}
+                                    <span className="text-white font-semibold">{trait as string}</span>
+                                  </div>
+                                )
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div className="bg-white/10 px-2 py-1 rounded">
+                                <span className="text-gray-300">Rarity:</span> <span className="text-white font-semibold">Epic Degen</span>
+                              </div>
+                              <div className="bg-white/10 px-2 py-1 rounded">
+                                <span className="text-gray-300">Vibes:</span> <span className="text-white font-semibold">Trippy AF</span>
+                              </div>
+                              <div className="bg-white/10 px-2 py-1 rounded">
+                                <span className="text-gray-300">Power Level:</span> <span className="text-white font-semibold">Over 9000</span>
+                              </div>
+                              <div className="bg-white/10 px-2 py-1 rounded">
+                                <span className="text-gray-300">Hopium:</span> <span className="text-white font-semibold">Maximum</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -347,6 +375,14 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                           <span className="text-white font-bold">{mintQuantity}</span>
                         </div>
                       )}
+
+                      {/* NFT Status */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300">NFT Status:</span>
+                        <span className={`font-bold ${mintResult.nftMintAddress ? 'text-green-400' : 'text-orange-400'}`}>
+                          {mintResult.nftMintAddress ? '✅ Minted' : '⏳ Processing'}
+                        </span>
+                      </div>
 
                       {/* Lottery Status */}
                       <div className="flex justify-between items-center">
@@ -375,22 +411,44 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                         </div>
                       )}
 
-                      {/* Transaction Link */}
-                      <div className="pt-2 border-t border-white/20">
-                        <span className="text-gray-300 text-sm">Transaction:</span>
-                        <div className="mt-1">
-                          <a
-                            href={`https://solscan.io/tx/${mintResult.txHash}${environment.isDevnet ? '?cluster=devnet' : ''}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 px-3 py-2 rounded-lg transition-colors group"
-                          >
-                            <span className="font-mono text-xs text-white">
-                              {mintResult.txHash?.slice(0, 12)}...{mintResult.txHash?.slice(-8)}
-                            </span>
-                            <ExternalLink className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
-                          </a>
+                      {/* Transaction & NFT Links */}
+                      <div className="pt-2 border-t border-white/20 space-y-2">
+                        <div>
+                          <span className="text-gray-300 text-sm">Transaction:</span>
+                          <div className="mt-1">
+                            <a
+                              href={`https://solscan.io/tx/${mintResult.txHash}${environment.isDevnet ? '?cluster=devnet' : ''}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 px-3 py-2 rounded-lg transition-colors group"
+                            >
+                              <span className="font-mono text-xs text-white">
+                                {mintResult.txHash?.slice(0, 12)}...{mintResult.txHash?.slice(-8)}
+                              </span>
+                              <ExternalLink className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
+                            </a>
+                          </div>
                         </div>
+
+                        {/* NFT Link */}
+                        {mintResult.nftMintAddress && (
+                          <div>
+                            <span className="text-gray-300 text-sm">View NFT:</span>
+                            <div className="mt-1">
+                              <a
+                                href={`https://solscan.io/token/${mintResult.nftMintAddress}${environment.isDevnet ? '?cluster=devnet' : ''}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-3 py-2 rounded-lg transition-colors group"
+                              >
+                                <span className="font-mono text-xs text-white">
+                                  NFT #{mintResult.geckoId}
+                                </span>
+                                <ExternalLink className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
+                              </a>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -502,7 +560,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
         <div className="mb-6">
           <div className="text-center mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              How many geckos? (Each has individual lottery chance!)
+              How many geckoz? (Each has individual lottery chance!)
             </label>
             <div className="flex items-center justify-center space-x-4">
               <select
@@ -513,7 +571,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
               >
                 {Array.from({ length: maxQuantity }, (_, i) => i + 1).map((num) => (
                   <option key={num} value={num}>
-                    {num} gecko{num > 1 ? 's' : ''}
+                    {num} geckoz{num > 1 ? '' : ''}
                   </option>
                 ))}
               </select>
@@ -527,7 +585,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
         {/* Mint Price Display */}
         <div className="mb-6 text-center">
           <div className="text-sm text-gray-600 mb-2">
-            {mintQuantity === 1 ? 'Mint Price' : `Total Cost (${mintQuantity} geckos)`}
+            {mintQuantity === 1 ? 'Mint Price' : `Total Cost (${mintQuantity} geckoz)`}
           </div>
           <div className="text-2xl font-bold text-gray-900">
             {totalCost.toFixed(4)} SOL
@@ -538,7 +596,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
             </div>
           )}
           <div className="text-sm text-gray-500 mt-1">
-            Available Geckos: {realMintStats.availableGeckos || 'Loading...'}
+            Available Geckoz: {realMintStats.availableGeckoz || 'Loading...'}
           </div>
         </div>
 
@@ -554,7 +612,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
             </div>
           ) : soldOut ? (
             <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-              <p className="text-red-700 font-bold">SOLD OUT! All geckos have found new homes 🦎 (You snooze, you lose!)</p>
+              <p className="text-red-700 font-bold">SOLD OUT! All geckoz have found new homes 🦎 (You snooze, you lose!)</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -596,8 +654,8 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                     <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
                     <span>
                       {mintQuantity === 1 
-                        ? 'Minting Your Gecko...' 
-                        : `Minting ${mintQuantity} Geckos...`}
+                        ? 'Minting Your Geckoz...' 
+                        : `Minting ${mintQuantity} Geckoz...`}
                     </span>
                   </div>
                 ) : !canAfford ? (
@@ -607,8 +665,8 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                     <span>🦎</span>
                     <span>
                       {mintQuantity === 1 
-                        ? `Mint Gecko for ${MINT_CONFIG.PRICE_SOL} SOL`
-                        : `Mint ${mintQuantity} Geckos for ${totalCost.toFixed(4)} SOL`}
+                        ? `Mint Geckoz for ${MINT_CONFIG.PRICE_SOL} SOL`
+                        : `Mint ${mintQuantity} Geckoz for ${totalCost.toFixed(4)} SOL`}
                     </span>
                   </div>
                 )}
@@ -633,8 +691,8 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
             <div className="flex items-center justify-center space-x-2 text-primary-700">
               <Zap className="w-5 h-5" />
               <span className="font-bold">
-                🚨 LOTTERY ALERT: {lotteryWinnersLeft} more winners can still win {MINT_CONFIG.LOTTERY_PRIZE_SOL} SOL + 3 geckos each! 
-                {mintQuantity > 1 && ` With ${mintQuantity} geckos, you have ${mintQuantity} chances to win!`}
+                🚨 LOTTERY ALERT: {lotteryWinnersLeft} more winners can still win {MINT_CONFIG.LOTTERY_PRIZE_SOL} SOL + 3 geckoz each! 
+                {mintQuantity > 1 && ` With ${mintQuantity} geckoz, you have ${mintQuantity} chances to win!`}
                 {mintQuantity === 1 && ` (Could be you... probably not, but could be!)`}
               </span>
             </div>
@@ -650,7 +708,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
           >
             <h4 className="font-bold text-green-800 mb-2 flex items-center">
               🎉 {mintResult.mintedGeckos?.length > 1 
-                ? `Bulk Mint Successful! (${mintResult.mintedGeckos.length} geckos)`
+                ? `Bulk Mint Successful! (${mintResult.mintedGeckos.length} geckoz)`
                 : 'Mint Successful!'}
             </h4>
             <div className="space-y-2 text-sm">
@@ -676,16 +734,16 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
               {mintResult.mintedGeckos?.length > 1 ? (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Geckos Minted:</span>
+                    <span className="text-gray-600">Geckoz Minted:</span>
                     <span className="font-bold text-gray-800">{mintResult.mintedGeckos.length}</span>
                   </div>
                   <div className="text-xs text-gray-600">
-                    Gecko IDs: {mintResult.mintedGeckos.map(g => `#${g.id}`).join(', ')}
+                    Geckoz IDs: {mintResult.mintedGeckos.map(g => `#${g.id}`).join(', ')}
                   </div>
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Gecko ID:</span>
+                  <span className="text-gray-600">Geckoz ID:</span>
                   <span className="font-bold text-gray-800">#{mintResult.geckoId}</span>
                 </div>
               )}
@@ -698,12 +756,12 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                       🏆 MULTIPLE LOTTERY WINS! 🏆<br/>
                       <span className="text-sm">
                         Winners: {mintResult.lotteryWinners.map(id => `#${id}`).join(', ')}<br/>
-                        Total winnings: +{mintResult.totalLotteryWinnings} SOL + {mintResult.totalGeckos} Geckos Total!
+                        Total winnings: +{mintResult.totalLotteryWinnings} SOL + {mintResult.totalGeckos} Geckoz Total!
                       </span>
                     </div>
                   ) : (
                     <span className="text-yellow-800 font-bold">
-                      🏆 LOTTERY WINNER: +{mintResult.solReceived} SOL + {mintResult.totalGeckos} Geckos Total!
+                      🏆 LOTTERY WINNER: +{mintResult.solReceived} SOL + {mintResult.totalGeckos} Geckoz Total!
                     </span>
                   )}
                 </div>
@@ -722,14 +780,14 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                       <h4 className="font-bold text-gray-900">{mintResult.geckoData.name}</h4>
                       <p className="text-sm text-gray-600">
                         {mintResult.mintedGeckos?.length > 1 
-                          ? `First of your ${mintResult.mintedGeckos.length} new geckos!`
-                          : 'Your new gecko companion!'}
+                          ? `First of your ${mintResult.mintedGeckos.length} new geckoz!`
+                          : 'Your new geckoz companion!'}
                       </p>
                     </div>
                   </div>
                   {mintResult.mintedGeckos?.length > 1 && (
                     <div className="mt-2 text-xs text-gray-500">
-                      + {mintResult.mintedGeckos.length - 1} more gecko{mintResult.mintedGeckos.length > 2 ? 's' : ''} in your wallet!
+                      + {mintResult.mintedGeckos.length - 1} more geckoz in your wallet!
                     </div>
                   )}
                 </div>

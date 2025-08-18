@@ -8,7 +8,7 @@ export default function GeckoCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0)
   
   // Real gecko data with actual images
-  const geckos = [
+  const geckoz = [
     { 
       id: 1337, 
       name: 'Gecko #1337', 
@@ -60,11 +60,11 @@ export default function GeckoCarousel() {
   ]
 
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % geckos.length)
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % geckoz.length)
   }
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + geckos.length) % geckos.length)
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + geckoz.length) % geckoz.length)
   }
 
   useEffect(() => {
@@ -120,8 +120,8 @@ export default function GeckoCarousel() {
                   {/* Gecko Image */}
                   <div className="w-64 h-64 mx-auto mb-6 bg-gradient-to-br from-primary-50 to-accent-50 rounded-xl overflow-hidden">
                     <img 
-                      src={geckos[currentIndex].image} 
-                      alt={geckos[currentIndex].name}
+                      src={geckoz[currentIndex].image} 
+                      alt={geckoz[currentIndex].name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         // Fallback to emoji if image fails to load
@@ -137,11 +137,11 @@ export default function GeckoCarousel() {
 
                   {/* Gecko Info */}
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                    {geckos[currentIndex].name}
+                    {geckoz[currentIndex].name}
                   </h3>
                   
-                  <div className={`inline-block px-3 py-1 rounded-full border-2 text-sm font-medium mb-4 ${getRarityColor(geckos[currentIndex].rarity)}`}>
-                    {geckos[currentIndex].rarity}
+                  <div className={`inline-block px-3 py-1 rounded-full border-2 text-sm font-medium mb-4 ${getRarityColor(geckoz[currentIndex].rarity)}`}>
+                    {geckoz[currentIndex].rarity}
                   </div>
 
                   {/* Traits */}
@@ -149,7 +149,7 @@ export default function GeckoCarousel() {
                     <div>
                       <h4 className="text-sm font-semibold text-gray-700 mb-3">Traits</h4>
                       <div className="flex flex-wrap justify-center gap-2">
-                        {geckos[currentIndex].traits.map((trait, index) => (
+                        {geckoz[currentIndex].traits.map((trait, index) => (
                           <span
                             key={index}
                             className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium"
@@ -161,7 +161,7 @@ export default function GeckoCarousel() {
                     </div>
                     {/* Sassy Description */}
                     <p className="text-sm text-gray-600 italic">
-                      {geckos[currentIndex].description}
+                      {geckoz[currentIndex].description}
                     </p>
                   </div>
                 </motion.div>
@@ -178,7 +178,7 @@ export default function GeckoCarousel() {
 
           {/* Dots Indicator */}
           <div className="flex justify-center mt-8 space-x-2">
-            {geckos.map((_, index) => (
+            {geckoz.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}

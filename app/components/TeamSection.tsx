@@ -22,9 +22,16 @@ export default function TeamSection() {
     {
       name: 'Sigma Gecko',
       role: 'Community Lead',
-      description: 'The voice of the geckos. Keeps the community hyped and handles all the chaos.',
+      description: 'The voice of the geckoz. Keeps the community hyped and handles all the chaos.',
       traits: ['Communicator', 'Hype Master', 'Community First'],
       socials: { twitter: '@sigmagecko', telegram: 'sigmagecko' }
+    },
+    {
+      name: 'anon hutch',
+      role: 'Tech Advisor',
+      description: 'Anonymous architect building behind the scenes. Prefers code over conversation.',
+      traits: ['Builder', 'Anonymous', 'Tech Visionary'],
+      socials: { twitter: '@anonhutch', telegram: 'anonhutch' }
     }
   ]
 
@@ -42,13 +49,13 @@ export default function TeamSection() {
             Meet the Gecko Team
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            The entrepreneurial geckos building the future of digital collecting. 
+            The entrepreneurial geckoz building the future of digital collecting. 
             Each team member brings unique skills and gecko wisdom to the project.
           </p>
         </motion.div>
 
         {/* Team Grid */}
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {team.map((member, index) => (
             <motion.div
               key={index}
@@ -120,8 +127,8 @@ export default function TeamSection() {
           <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h3>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">
             "To build the most entrepreneurial and community-driven gecko collection on Solana. 
-            We believe that when greedy geckos work together, everyone wins. Our lottery system, 
-            active community, and innovative approach make collecting geckos both fun and rewarding."
+            We believe that when greedy geckoz work together, everyone wins. Our lottery system, 
+            active community, and innovative approach make collecting geckoz both fun and rewarding."
           </p>
           <div className="mt-6 flex justify-center space-x-8 text-sm">
             <div>

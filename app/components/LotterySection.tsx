@@ -40,7 +40,7 @@ export default function LotterySection({ mintStats }: LotterySectionProps) {
               🎰 Random Gecko Lottery
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Out of 2222 geckos, 5 lucky winners will be randomly selected to win ~0.93 SOL each! 
+              Out of 2222 geckoz, 5 lucky winners will be randomly selected to win ~0.93 SOL each! 
               No gaming, no timing—just pure dumb luck (your specialty).
             </p>
           </motion.div>
@@ -103,7 +103,7 @@ export default function LotterySection({ mintStats }: LotterySectionProps) {
               <div className="space-y-3 text-sm text-gray-600">
                 <div className="flex items-start space-x-3">
                   <div className="w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
-                  <p>5 random winners will be chosen from all 2222 gecko minters</p>
+                  <p>5 random winners will be chosen from all 2222 geckoz minters</p>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
@@ -115,7 +115,7 @@ export default function LotterySection({ mintStats }: LotterySectionProps) {
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-xs font-bold">4</div>
-                  <p>Your odds: roughly 0.22% per gecko (better than the stock market)</p>
+                  <p>Your odds: roughly 0.22% per geckoz (better than the stock market)</p>
                 </div>
               </div>
             </div>
@@ -165,7 +165,7 @@ export default function LotterySection({ mintStats }: LotterySectionProps) {
                   <span className="font-semibold">Pro Tip (Not Really):</span>
                 </div>
                 <p className="text-sm text-yellow-700 mt-1">
-                  More geckos = more chances to win. Math is hard, but this part isn't!
+                  More geckoz = more chances to win. Math is hard, but this part isn't!
                 </p>
               </div>
             </div>

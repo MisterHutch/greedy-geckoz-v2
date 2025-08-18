@@ -178,7 +178,7 @@ export default function HeroSection({ mintStats }: HeroSectionProps) {
             </div>
             <div className="flex justify-between text-xs text-gray-600">
               <span>Lottery Winners: {5 - mintStats.lotteryWinnersRemaining}/5 found</span>
-              <span>{mintStats.totalSupply - mintStats.totalMinted} geckos remaining</span>
+              <span>{mintStats.totalSupply - mintStats.totalMinted} geckoz remaining</span>
             </div>
           </div>
         </motion.div>

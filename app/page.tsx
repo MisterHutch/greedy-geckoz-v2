@@ -134,7 +134,7 @@ export default function Home() {
               </div>
             </div>
             <div className="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
-              © 2025 Geckoz. All rights reserved. This is definitely not financial advice (seriously, don't listen to geckos about money).
+              © 2025 Geckoz. All rights reserved. This is definitely not financial advice (seriously, don't listen to geckoz about money).
             </div>
           </div>
         </footer>
