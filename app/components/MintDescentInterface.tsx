@@ -216,7 +216,8 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
             translateZ(${layer.depth + descentProgress * 200}px)
             rotateX(${layerProgress * 5}deg)
           `,
-          opacity: isActive ? 1 : 0.3 + layerProgress * 0.4,
+          opacity: isActive ? 1 : 0,
+          display: isActive ? 'block' : 'none',
           background: 'rgba(255, 255, 255, 0.02)',
           backdropFilter: 'blur(20px)',
           border: `1px solid rgba(86, 236, 106, ${0.2 + layerProgress * 0.3})`,
