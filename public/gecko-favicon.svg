@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="geckoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#56ec6a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#06ffa5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff006e;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Gecko Body -->
+  <ellipse cx="16" cy="20" rx="12" ry="8" fill="url(#geckoGradient)" />
+  
+  <!-- Gecko Head -->
+  <ellipse cx="16" cy="12" rx="8" ry="6" fill="url(#geckoGradient)" />
+  
+  <!-- Eyes -->
+  <circle cx="13" cy="10" r="2" fill="#000" />
+  <circle cx="19" cy="10" r="2" fill="#000" />
+  <circle cx="13.5" cy="9.5" r="0.5" fill="#fff" />
+  <circle cx="19.5" cy="9.5" r="0.5" fill="#fff" />
+  
+  <!-- Tail -->
+  <path d="M 28 20 Q 30 15 28 12 Q 26 10 24 12 Q 26 16 28 20" fill="url(#geckoGradient)" />
+  
+  <!-- Legs -->
+  <ellipse cx="10" cy="24" rx="2" ry="3" fill="url(#geckoGradient)" />
+  <ellipse cx="22" cy="24" rx="2" ry="3" fill="url(#geckoGradient)" />
+  <ellipse cx="8" cy="16" rx="1.5" ry="2" fill="url(#geckoGradient)" />
+  <ellipse cx="24" cy="16" rx="1.5" ry="2" fill="url(#geckoGradient)" />
+  
+  <!-- Mouth -->
+  <path d="M 14 14 Q 16 15 18 14" stroke="#000" stroke-width="0.5" fill="none" />
+</svg>

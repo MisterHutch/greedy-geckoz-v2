@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Header from './components/Header'
 import ImpossibleGecko from './components/ImpossibleGecko'
-import GeckoPortalCarousel from './components/GeckoPortalCarousel'
+import EnhancedGeckoCarousel from './components/EnhancedGeckoCarousel'
 import MintDescentInterface from './components/MintDescentInterface'
 import MirrorCouncilTeam from './components/MirrorCouncilTeam'
 import LotterySection from './components/LotterySection'
@@ -78,8 +78,8 @@ export default function Home() {
         {/* Impossible Gecko Hero Section */}
         <ImpossibleGecko mintStats={mintStats} />
         
-        {/* Gecko Portal Carousel */}
-        <GeckoPortalCarousel />
+        {/* Enhanced Gecko Portal Carousel */}
+        <EnhancedGeckoCarousel />
         
         {/* Mint Descent Interface */}
         <MintDescentInterface mintStats={mintStats} />

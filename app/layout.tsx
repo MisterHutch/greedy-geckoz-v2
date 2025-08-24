@@ -15,30 +15,40 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Geckoz - Degen Paradise | Where Lambos Go to Die',
-  description: 'The ultimate Solana NFT community for degenerates. Join 3,500 Geckoz holders in the cope cave. Mint your mistakes, embrace the chaos.',
-  keywords: ['Solana', 'NFT', 'Degen', 'Crypto', 'Geckoz', 'Community', 'Memes'],
-  authors: [{ name: 'Geckoz Team' }],
+  title: 'Greedy Geckoz ∞ | Degen Paradise Where Lambos Go to Die',
+  description: '2222 interdimensional geckoz existing across infinite realities. Join the ultimate Solana NFT community for degenerates who embrace the chaos.',
+  keywords: ['Solana', 'NFT', 'Degen', 'Crypto', 'Geckoz', 'Community', 'Memes', 'Greedy', 'Dimensional'],
+  authors: [{ name: 'Greedy Geckoz Council' }],
   openGraph: {
-    title: 'Geckoz - Degen Paradise',
-    description: 'Where degenerates gather to lose money together. 3,500 unique Geckoz on Solana.',
+    title: 'Greedy Geckoz ∞ - Degen Paradise',
+    description: '2222 interdimensional geckoz where reality is optional and JPEGs are forever. 0.0169 SOL per dimension.',
     type: 'website',
     locale: 'en_US',
-    siteName: 'Geckoz',
+    siteName: 'Greedy Geckoz',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Geckoz - Degen Paradise',
-    description: 'Where lambos go to die. Join the cope cave.',
-    creator: '@GreedyGeckoz',
+    title: 'Greedy Geckoz ∞',
+    description: 'Reality is optional, geckoz are forever. Enter the gecko dimension.',
+    creator: '@greedygeckoz',
   },
   robots: {
     index: true,
     follow: true,
   },
   icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    icon: [
+      {
+        url: '/gecko-favicon.svg',
+        type: 'image/svg+xml',
+      },
+      {
+        url: '/favicon.ico',
+        sizes: 'any',
+      }
+    ],
+    apple: '/gecko-favicon.svg',
+    shortcut: '/gecko-favicon.svg',
   },
   manifest: '/manifest.json',
 }
@@ -68,10 +78,11 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              console.log('%c🦎 GREEDY GECKOZ DETECTED 🦎', 'color: #00ff88; font-size: 20px; font-weight: bold;');
-              console.log('%cWelcome to the degen paradise!', 'color: #9945ff; font-size: 14px;');
-              console.log('%cIf you can read this, you might be degen enough to join us.', 'color: #ffd700; font-size: 12px;');
-              console.log('%cContract: [REDACTED] | Discord: discord.gg/geckoz', 'color: #ffffff; font-size: 10px;');
+              console.log('%c🌀 GREEDY GECKOZ ∞ DETECTED 🦎', 'color: #56ec6a; font-size: 20px; font-weight: bold;');
+              console.log('%cWelcome to the interdimensional degen paradise!', 'color: #ff006e; font-size: 14px;');
+              console.log('%cReality is optional, geckoz are forever 🌀', 'color: #06ffa5; font-size: 12px;');
+              console.log('%cIf you can read this across dimensions, you are degen enough to join us.', 'color: #ffbe0b; font-size: 12px;');
+              console.log('%cTwitter: @greedygeckoz | Telegram: t.me/+TjyUbcWEorNlNDcx', 'color: #8338ec; font-size: 10px;');
             `,
           }}
         />
