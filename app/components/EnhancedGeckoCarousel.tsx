@@ -10,7 +10,14 @@ interface GeckoData {
   name: string
   image: string
   rarity: string
-  traits: string[]
+  traits: {
+    head: string
+    body: string
+    eyes: string
+    outfit: string
+    background: string
+    special?: string
+  }
   description: string
 }
 
@@ -21,14 +28,21 @@ export default function EnhancedGeckoCarousel() {
   const containerRef = useRef<HTMLDivElement>(null)
   const { scrollY, paradoxIntensity } = useScrollValue()
   
-  // Expanded gecko collection with more variety
+  // Expanded gecko collection with proper trait categories
   const geckoz: GeckoData[] = [
     { 
       id: 1337, 
       name: 'Gecko #1337', 
       image: '/geckoz/gecko-1337.png',
       rarity: 'Legendary', 
-      traits: ['Elite Hacker', 'Code Wizard', 'NFT Genius', 'Diamond Skin'],
+      traits: {
+        head: 'Golden Horn',
+        body: 'Diamond Skin',
+        eyes: 'Laser',
+        outfit: 'Space Suit',
+        background: 'Studded Diamonds',
+        special: 'Elite Hacker'
+      },
       description: "This gecko wrote the smart contract for your portfolio (it's in the red)"
     },
     { 
@@ -36,7 +50,13 @@ export default function EnhancedGeckoCarousel() {
       name: 'Gecko #420', 
       image: '/geckoz/gecko-420.png',
       rarity: 'Epic', 
-      traits: ['Chill Vibes', 'Diamond Hands', 'Moon Walker', 'Green Polo'],
+      traits: {
+        head: 'Beanie',
+        body: 'Green',
+        eyes: 'Complacent',
+        outfit: 'Green Polo',
+        background: 'Chill'
+      },
       description: "The most relaxed gecko in the collection. Probably high on hopium."
     },
     { 
@@ -44,7 +64,14 @@ export default function EnhancedGeckoCarousel() {
       name: 'Gecko #69', 
       image: '/geckoz/gecko-69.png',
       rarity: 'Rare', 
-      traits: ['Nice', 'Meme Lord', 'Culture Icon', 'Backwards Cap'],
+      traits: {
+        head: 'Backwards Cap',
+        body: 'Pale Cerulean',
+        eyes: 'Bored',
+        outfit: 'Sleeveless',
+        background: 'Seafoam',
+        special: 'Meme Lord'
+      },
       description: "Nice. This gecko gets it. Peak internet culture appreciation."
     },
     { 
@@ -52,7 +79,13 @@ export default function EnhancedGeckoCarousel() {
       name: 'Gecko #1776', 
       image: '/geckoz/gecko-1776.png',
       rarity: 'Patriotic', 
-      traits: ['Freedom Fighter', 'Constitution Lover', 'Eagle Buddy', 'Tuxedo'],
+      traits: {
+        head: 'None',
+        body: 'Rose',
+        eyes: 'Hopeful',
+        outfit: 'Tuxedo',
+        background: 'Salmon'
+      },
       description: "This gecko believes in life, liberty, and the pursuit of moon missions."
     },
     { 
@@ -60,7 +93,14 @@ export default function EnhancedGeckoCarousel() {
       name: 'Gecko #2222', 
       image: '/geckoz/gecko-2222.png',
       rarity: 'Legendary', 
-      traits: ['Collection Complete', 'Final Boss', 'Ultra Rare', 'Space Suit'],
+      traits: {
+        head: 'Tattooz',
+        body: 'Trippy',
+        eyes: 'Heaven',
+        outfit: 'Space Suit',
+        background: 'Kollidz',
+        special: 'Final Boss'
+      },
       description: "The legendary final gecko. If you get this, you've transcended reality."
     },
     { 
@@ -68,7 +108,14 @@ export default function EnhancedGeckoCarousel() {
       name: 'Gecko #1', 
       image: '/geckoz/gecko-1.png',
       rarity: 'Genesis', 
-      traits: ['First Born', 'OG Status', 'Genesis Power', 'Myth Outfit'],
+      traits: {
+        head: 'Cowboy Hat',
+        body: 'Ember',
+        eyes: 'Angry',
+        outfit: 'Myth',
+        background: 'Jasmin',
+        special: 'Genesis Power'
+      },
       description: "The very first gecko to enter our dimension. Legendary status."
     },
     { 
@@ -76,7 +123,13 @@ export default function EnhancedGeckoCarousel() {
       name: 'Gecko #888', 
       image: '/geckoz/gecko-888.png',
       rarity: 'Lucky', 
-      traits: ['Lucky Number', 'Fortune Blessed', 'Prosperity', 'Golden Horn'],
+      traits: {
+        head: 'Golden Horn',
+        body: 'Corn',
+        eyes: 'Hopeful',
+        outfit: 'Pullover Hoodie',
+        background: 'Minty'
+      },
       description: "Triple 8s = ultimate luck. This gecko brings good fortune to holders."
     },
     { 
@@ -84,7 +137,14 @@ export default function EnhancedGeckoCarousel() {
       name: 'Gecko #666', 
       image: '/geckoz/gecko-666.png',
       rarity: 'Cursed', 
-      traits: ['Devil Number', 'Chaos Bringer', 'Red Eyes', 'Evil Aura'],
+      traits: {
+        head: 'Devil',
+        body: 'Zombie',
+        eyes: 'Evil',
+        outfit: 'War Suit',
+        background: 'Biloba Flower',
+        special: 'Chaos Bringer'
+      },
       description: "The cursed gecko. Brings chaos but also massive gains... maybe."
     },
     { 
@@ -92,7 +152,14 @@ export default function EnhancedGeckoCarousel() {
       name: 'Gecko #1111', 
       image: '/geckoz/gecko-1111.png',
       rarity: 'Angel', 
-      traits: ['Angel Number', 'Divine Blessed', 'Heaven Eyes', 'Pure Energy'],
+      traits: {
+        head: 'None',
+        body: 'Pale Cerulean',
+        eyes: 'Heaven',
+        outfit: 'Tuxedo',
+        background: 'Parchment',
+        special: 'Divine Blessed'
+      },
       description: "Blessed by the crypto gods. This gecko ensures diamond hands."
     },
     { 
@@ -100,7 +167,13 @@ export default function EnhancedGeckoCarousel() {
       name: 'Gecko #999', 
       image: '/geckoz/gecko-999.png',
       rarity: 'Uncommon', 
-      traits: ['Almost 1000', 'Close Call', 'Patient Holder', 'Black Sweater'],
+      traits: {
+        head: 'Rocket',
+        body: 'Rusty',
+        eyes: 'Exhausted',
+        outfit: 'Black Sweater',
+        background: 'Aquamarine'
+      },
       description: "So close to 1000, yet so far. Story of every degen's life."
     }
   ]
@@ -393,24 +466,29 @@ export default function EnhancedGeckoCarousel() {
                 <div 
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
-                    gap: '0.75rem'
+                    gridTemplateColumns: '1fr',
+                    gap: '0.5rem'
                   }}
                 >
-                  {activeGecko.traits.map((trait, index) => (
+                  {Object.entries(activeGecko.traits).map(([category, trait]) => (
                     <div
-                      key={index}
+                      key={category}
                       style={{
-                        background: `rgba(${rarityColors.glow.replace('rgba(', '').replace(')', '').split(',').slice(0, 3).join(', ')}, 0.2)`,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        background: `rgba(${rarityColors.glow.replace('rgba(', '').replace(')', '').split(',').slice(0, 3).join(', ')}, 0.1)`,
                         border: `1px solid ${rarityColors.main}`,
-                        borderRadius: '8px',
-                        padding: '8px 12px',
-                        fontSize: '0.875rem',
-                        color: 'white',
-                        textAlign: 'center'
+                        borderRadius: '6px',
+                        padding: '6px 10px',
+                        fontSize: '0.8rem'
                       }}
                     >
-                      {trait}
+                      <span style={{ color: 'rgba(255, 255, 255, 0.7)', textTransform: 'capitalize' }}>
+                        {category}:
+                      </span>
+                      <span style={{ color: 'white', fontWeight: '500' }}>
+                        {trait}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -418,7 +496,7 @@ export default function EnhancedGeckoCarousel() {
             )}
           </AnimatePresence>
 
-          {/* Collection Stats */}
+          {/* Gecko Traits Display */}
           <div 
             style={{
               marginTop: 'auto',
@@ -428,18 +506,42 @@ export default function EnhancedGeckoCarousel() {
               border: '1px solid rgba(255, 255, 255, 0.1)'
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Rarity Rank</span>
-              <span style={{ color: rarityColors.main, fontWeight: 'bold' }}>
-                #{Math.floor(Math.random() * 500) + 1}
-              </span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Last Sale</span>
-              <span style={{ color: 'var(--dimension-3)', fontWeight: 'bold' }}>
-                {(Math.random() * 5 + 0.5).toFixed(2)} SOL
-              </span>
-            </div>
+            <h5 
+              style={{
+                color: 'white',
+                fontSize: '1rem',
+                fontWeight: '600',
+                marginBottom: '0.75rem',
+                textAlign: 'center'
+              }}
+            >
+              Gecko Traits
+            </h5>
+            {Object.entries(activeGecko.traits).slice(0, 3).map(([category, trait]) => (
+              <div 
+                key={category}
+                style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  marginBottom: '0.5rem',
+                  fontSize: '0.875rem'
+                }}
+              >
+                <span style={{ color: 'rgba(255, 255, 255, 0.7)', textTransform: 'capitalize' }}>
+                  {category}:
+                </span>
+                <span style={{ color: rarityColors.main, fontWeight: 'bold' }}>
+                  {trait}
+                </span>
+              </div>
+            ))}
+            {Object.keys(activeGecko.traits).length > 3 && (
+              <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
+                <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>
+                  +{Object.keys(activeGecko.traits).length - 3} more traits
+                </span>
+              </div>
+            )}
           </div>
         </motion.div>
       </div>
