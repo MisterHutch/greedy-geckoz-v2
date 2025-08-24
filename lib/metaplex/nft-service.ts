@@ -1,5 +1,5 @@
 import { Connection, PublicKey, Keypair } from '@solana/web3.js'
-import { Metaplex, keypairIdentity } from '@metaplex-foundation/js'
+import { Metaplex, keypairIdentity, walletAdapterIdentity } from '@metaplex-foundation/js'
 import { WalletContextState } from '@solana/wallet-adapter-react'
 import PinataService from '../ipfs/pinata-service'
 
@@ -9,6 +9,7 @@ export interface GeckoNFTData {
   image: string
   metadata: string
   available: boolean
+  generatedGecko?: any // For passing generated gecko data
 }
 
 export interface NFTMintResult {
@@ -30,12 +31,13 @@ export class MetaplexNFTService {
     this.connection = connection
     this.pinataService = new PinataService()
     
-    // Initialize Metaplex with payer (for collection authority)
-    // In production, this would use a dedicated collection authority keypair
-    const payer = payerKeypair || Keypair.generate() // Generate for demo
-    
+    // Initialize Metaplex without default keypair - will use wallet for signing
     this.metaplex = Metaplex.make(connection)
-      .use(keypairIdentity(payer))
+    
+    // Only set keypair identity if one is provided (for collection authority operations)
+    if (payerKeypair) {
+      this.metaplex.use(keypairIdentity(payerKeypair))
+    }
   }
 
   /**
@@ -50,7 +52,7 @@ export class MetaplexNFTService {
         uri: 'https://gateway.pinata.cloud/ipfs/QmYourCollectionMetadataHash', // You'll need to upload collection metadata
         name: 'Greedy Geckoz',
         symbol: 'GECKO',
-        sellerFeeBasisPoints: 500, // 5% royalty
+        sellerFeeBasisPoints: 600, // 6% royalty
         isCollection: true,
         creators: [
           {
@@ -84,11 +86,15 @@ export class MetaplexNFTService {
     geckoData: GeckoNFTData
   ): Promise<NFTMintResult> {
     try {
-      if (!wallet.publicKey) {
-        throw new Error('Wallet not connected')
+      if (!wallet.publicKey || !wallet.signTransaction) {
+        throw new Error('Wallet not connected or does not support signing')
       }
 
       console.log(`Minting Gecko #${geckoData.id} for ${wallet.publicKey.toString()}`)
+
+      // Create a metaplex instance with wallet adapter identity
+      const metaplexWithWallet = Metaplex.make(this.connection)
+        .use(walletAdapterIdentity(wallet as any))
 
       // Step 1: Upload image to IPFS (if not already done)
       let imageIpfsHash: string
@@ -98,24 +104,36 @@ export class MetaplexNFTService {
         const imageBuffer = Buffer.from(await imageResponse.arrayBuffer())
         imageIpfsHash = await this.pinataService.uploadGeckoImage(imageBuffer, geckoData.id)
       } else {
-        // Assume it's already an IPFS hash
-        imageIpfsHash = geckoData.image
+        // Assume it's already an IPFS hash or URI
+        if (geckoData.image.includes('ipfs://') || geckoData.image.includes('gateway.pinata.cloud')) {
+          imageIpfsHash = geckoData.image.split('/').pop() || geckoData.image
+        } else {
+          imageIpfsHash = geckoData.image
+        }
       }
 
       // Step 2: Create and upload metadata
-      const metadata = this.pinataService.createGeckoMetadata(geckoData, imageIpfsHash)
+      const metadata = geckoData.generatedGecko?.metadata 
+        ? geckoData.generatedGecko.metadata 
+        : this.pinataService.createGeckoMetadata(geckoData, imageIpfsHash)
+      
+      // Ensure image is set properly in metadata
+      if (metadata && typeof metadata === 'object') {
+        metadata.image = `https://gateway.pinata.cloud/ipfs/${imageIpfsHash}`
+      }
+      
       const metadataIpfsHash = await this.pinataService.uploadGeckoMetadata(metadata, geckoData.id)
       const metadataUri = this.pinataService.getIpfsUri(metadataIpfsHash)
 
-      // Step 3: Mint the NFT
-      const { nft, response } = await this.metaplex.nfts().create({
+      // Step 3: Mint the NFT using wallet's signer
+      const { nft, response } = await metaplexWithWallet.nfts().create({
         uri: metadataUri,
         name: metadata.name,
         symbol: metadata.symbol,
         sellerFeeBasisPoints: 500, // 5% royalty
         creators: [
           {
-            address: new PublicKey('Cs3etBd1Mw9xptSgFZFmcK41PALcm1XHX6yHmS5HsPLY'),
+            address: wallet.publicKey,
             share: 100
           }
         ],
@@ -123,7 +141,13 @@ export class MetaplexNFTService {
         tokenOwner: wallet.publicKey, // Mint directly to user's wallet
       })
 
-      console.log('NFT minted successfully:', nft.address.toString())
+      console.log('NFT minted successfully:', {
+        mintAddress: nft.address.toString(),
+        metadataAddress: nft.metadataAddress.toString(),
+        txSignature: response.signature,
+        tokenOwner: wallet.publicKey.toString(),
+        metadataUri
+      })
 
       return {
         success: true,

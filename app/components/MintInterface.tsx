@@ -139,11 +139,11 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
             notifications.addNotification(
               'success',
               `🎉 MULTIPLE LOTTERY WINS! 🎉`,
-              `You won ${result.lotteryWinners.length} lotteries! +${result.totalLotteryWinnings} SOL + ${result.totalGeckos} total geckoz!`,
+              `You won ${result.lotteryWinners.length} lotteries! +${result.totalLotteryWinnings} SOL + ${result.totalGeckoz} total geckoz!`,
               8000
             )
           } else {
-            notifications.showLotteryWin(result.totalGeckos || 3, result.solReceived || 0.98)
+            notifications.showLotteryWin(result.totalGeckoz || 3, result.solReceived || 0.98)
           }
         } else {
           if (mintQuantity > 1) {
@@ -211,7 +211,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                 Congratulations! You just won the lottery jackpot!
               </p>
               <div className="text-4xl font-bold text-primary-500 mb-4">
-                +{mintResult.solReceived?.toFixed(4)} SOL + {mintResult.totalGeckos} Geckos!
+                +{mintResult.solReceived?.toFixed(4)} SOL + {mintResult.totalGeckoz} Geckos!
               </div>
               <p className="text-gray-600 text-sm mb-6">
                 The gecko gods have blessed you! 🦎✨
@@ -401,7 +401,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-yellow-300">Total Geckos:</span>
-                            <span className="text-yellow-400 font-bold">{mintResult.totalGeckos}</span>
+                            <span className="text-yellow-400 font-bold">{mintResult.totalGeckoz}</span>
                           </div>
                           {mintResult.lotteryWinners?.length > 1 && (
                             <div className="text-xs text-yellow-200 mt-1">
@@ -756,12 +756,12 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
                       🏆 MULTIPLE LOTTERY WINS! 🏆<br/>
                       <span className="text-sm">
                         Winners: {mintResult.lotteryWinners.map(id => `#${id}`).join(', ')}<br/>
-                        Total winnings: +{mintResult.totalLotteryWinnings} SOL + {mintResult.totalGeckos} Geckoz Total!
+                        Total winnings: +{mintResult.totalLotteryWinnings} SOL + {mintResult.totalGeckoz} Geckoz Total!
                       </span>
                     </div>
                   ) : (
                     <span className="text-yellow-800 font-bold">
-                      🏆 LOTTERY WINNER: +{mintResult.solReceived} SOL + {mintResult.totalGeckos} Geckoz Total!
+                      🏆 LOTTERY WINNER: +{mintResult.solReceived} SOL + {mintResult.totalGeckoz} Geckoz Total!
                     </span>
                   )}
                 </div>

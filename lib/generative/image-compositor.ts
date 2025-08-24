@@ -57,7 +57,8 @@ export class ImageCompositor {
       console.error(`❌ Error composing gecko #${gecko.id}:`, error)
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Image composition failed'
+        error: error instanceof Error ? error.message : 'Image composition failed',
+        layersUsed: []
       }
     }
   }

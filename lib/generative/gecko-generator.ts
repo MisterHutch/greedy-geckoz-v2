@@ -19,6 +19,7 @@ export interface GeneratedGecko {
   name: string
   traits: Record<string, string>
   rarityScore: number
+  isUltraRare: boolean
   imageBuffer?: Buffer
   metadata: {
     name: string
@@ -244,6 +245,7 @@ export class GeckoGenerator {
       name: geckoName,
       traits: selectedTraits,
       rarityScore,
+      isUltraRare: this.isUltraRareFromTraits(selectedTraits),
       metadata: {
         name: geckoName,
         description: `A degen gecko from the Greedy Geckoz collection. Rarity Score: ${rarityScore}. This gecko is ready to moon! 🦎🚀`,
@@ -294,13 +296,28 @@ export class GeckoGenerator {
   /**
    * Check if a gecko combination is ultra-rare (for special effects)
    */
-  isUltraRare(gecko: GeneratedGecko): boolean {
-    // Define ultra-rare combinations
-    const hasUltraRareBody = ['Diamond Skin', 'Invisible'].includes(gecko.traits.Body)
-    const hasUltraRareAccessory = gecko.traits.Accessory === 'Infinity Gauntlet'
-    const hasUltraRareBackground = gecko.traits.Background === 'Diamond Matrix'
+  isUltraRareFromTraits(traits: Record<string, string>): boolean {
+    // Define ultra-rare traits based on actual GreedyGeckoz layers
+    const ultraRareTraits = [
+      // Super Rare backgrounds
+      'Biloba Flower', 'Malibu', 'Minty', 'Studded Diamonds', 'Kollidz',
+      // Super Rare skins
+      'Trippy', 'Zombie',
+      // Super Rare outfits
+      'Myth', 'War Suit', 'Space Suit',
+      // Super Rare eyez
+      'Evil', 'Heaven', 'Laser',
+      // Super Rare head
+      'Backwards Cap', 'Cowboy Hat', 'Tattooz', 
+      // Super Rare armz
+      'Spear', 'Sunrise', 'Thunderseal'
+    ]
     
-    return hasUltraRareBody || hasUltraRareAccessory || hasUltraRareBackground
+    return Object.values(traits).some(trait => ultraRareTraits.includes(trait))
+  }
+
+  isUltraRare(gecko: GeneratedGecko): boolean {
+    return this.isUltraRareFromTraits(gecko.traits)
   }
 
   /**

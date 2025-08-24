@@ -48,7 +48,9 @@ export default function Dashboard() {
     { value: '1w', label: '1W', days: 7 },
     { value: '1m', label: '1M', days: 30 },
     { value: '6m', label: '6M', days: 180 },
-    { value: '12m', label: '1Y', days: 365 }
+    { value: '12m', label: '1Y', days: 365 },
+    { value: '24m', label: '2Y', days: 730 },
+    { value: '36m', label: '3Y', days: 1095 },
   ]
 
   // Load data when wallet connects
@@ -152,7 +154,7 @@ export default function Dashboard() {
     if (pnl > 0) return "Congrats on breaking even... barely 😅"
     if (pnl > -100) return "Only down a little! Could be worse 📉"
     if (pnl > -1000) return "Oof, someone's been buying the top 💸"
-    return "RIP portfolio. Time to sell everything and buy geckos? 🪦"
+    return "RIP portfolio. Time to sell everything and buy geckoz? 🪦"
   }
 
   const getPerformanceColor = (value: number) => {

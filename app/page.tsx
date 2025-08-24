@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Header from './components/Header'
-import HeroSection from './components/HeroSection'
-import MintInterface from './components/MintInterface'
-import GeckoCarousel from './components/GeckoCarousel'
+import ImpossibleGecko from './components/ImpossibleGecko'
+import GeckoPortalCarousel from './components/GeckoPortalCarousel'
+import MintDescentInterface from './components/MintDescentInterface'
+import MirrorCouncilTeam from './components/MirrorCouncilTeam'
 import LotterySection from './components/LotterySection'
-import TeamSection from './components/TeamSection'
 import EnvironmentToggle, { useEnvironment } from './components/EnvironmentToggle'
 import GeckoNotification, { useGeckoNotifications } from './components/GeckoNotification'
+import { ParadoxScrollMaster } from '../lib/paradox/scroll-controller'
 
 export default function Home() {
   // Global state
@@ -17,124 +18,195 @@ export default function Home() {
   const notifications = useGeckoNotifications()
   
   const [mintStats, setMintStats] = useState({
-    totalMinted: 0,
+    totalMinted: 1453,
     totalSupply: 2222,
     lotteryWinnersCount: 0,
     lotteryWinnersRemaining: 5,
-    lotteryPool: 0.93
+    lotteryPool: 0.93,
+    availableGeckoz: 769
   })
 
   useEffect(() => {
+    // Initialize Paradox Scroll Controller
+    const paradoxScrollMaster = new ParadoxScrollMaster()
+    
     // Simulate real-time mint updates
     const timer = setInterval(() => {
       setMintStats(prev => ({
         ...prev,
-        totalMinted: Math.min(prev.totalSupply, prev.totalMinted + Math.floor(Math.random() * 3))
+        totalMinted: Math.min(prev.totalSupply, prev.totalMinted + Math.floor(Math.random() * 3)),
+        availableGeckoz: Math.max(0, prev.availableGeckoz - Math.floor(Math.random() * 2))
       }))
-    }, 30000) // Update every 30 seconds
+    }, 45000) // Update every 45 seconds
 
-    return () => clearInterval(timer)
+    return () => {
+      clearInterval(timer)
+      paradoxScrollMaster.destroy()
+    }
   }, [])
 
   return (
-    <div className="min-h-screen psychedelic-gradient-hero font-sans overflow-x-hidden fly-cursor">
+    <div 
+      className="min-h-screen font-sans overflow-x-hidden"
+      style={{
+        background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.98) 0%, rgba(131, 56, 236, 0.1) 50%, rgba(0, 0, 0, 0.99) 100%)',
+        position: 'relative'
+      }}
+    >
       <Header />
       
-      {/* Live Stats Ticker */}
-      <div className="psychedelic-gradient-1 text-white py-3 overflow-hidden">
+      {/* Paradox Stats Ticker */}
+      <div 
+        style={{
+          background: 'linear-gradient(90deg, var(--dimension-1), var(--dimension-2), var(--dimension-3), var(--dimension-4))',
+          backgroundSize: '400% 100%',
+          animation: 'paradoxTextShift 12s ease-in-out infinite'
+        }}
+        className="text-white py-3 overflow-hidden"
+      >
         <div className="animate-scroll whitespace-nowrap text-sm font-medium">
-          🦎 {mintStats.totalMinted}/{mintStats.totalSupply} Geckos Claimed by Degens | 
-          💰 {mintStats.lotteryWinnersRemaining}/5 Lottery Winners Still Out There (~{mintStats.lotteryPool} SOL each) | 
-          ⚡ Only 0.0169 SOL (because we're generous like that) | 
-          🎯 "Why be broke when you can own a jpeg gecko?" | 
-          Follow @geckoz for the chaos
+          🦎 {mintStats.totalMinted}/{mintStats.totalSupply} Geckoz Transcended Reality | 
+          💎 {mintStats.availableGeckoz} Geckoz Awaiting Manifestation |
+          💰 {mintStats.lotteryWinnersRemaining}/5 Dimensional Lottery Winners Remaining (~{mintStats.lotteryPool} SOL each) | 
+          ⚡ Only 0.0169 SOL to Enter the Gecko Dimension | 
+          🌀 "Reality is Optional, Geckoz are Forever" | 
+          🔗 Follow @greedygeckoz across all timelines
         </div>
       </div>
 
-      <main className="relative">
-        {/* Hero Section */}
-        <HeroSection mintStats={mintStats} />
+      <main className="relative" style={{ transformStyle: 'preserve-3d' }}>
+        {/* Impossible Gecko Hero Section */}
+        <ImpossibleGecko mintStats={mintStats} />
         
-        {/* Gecko Carousel */}
-        <GeckoCarousel />
+        {/* Gecko Portal Carousel */}
+        <GeckoPortalCarousel />
         
-        {/* Mint Interface */}
-        <section id="mint" className="py-16 px-4 psychedelic-gradient-2 relative">
-          {/* Add overlay for better readability */}
-          <div className="absolute inset-0 bg-white/80"></div>
-          <div className="relative z-10">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                Mint Your Gecko (And Maybe Get Rich?)
-              </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Join 2222 gecko degenerates • 0.0169 SOL each • 5 random lottery winners get ~0.93 SOL each (because someone has to get lucky, right?)
-              </p>
-            </div>
-            <MintInterface mintStats={mintStats} />
-          </div>
-          </div>
-        </section>
+        {/* Mint Descent Interface */}
+        <MintDescentInterface mintStats={mintStats} />
         
         {/* Lottery Section */}
         <LotterySection mintStats={mintStats} />
         
-        {/* Team Section */}
-        <TeamSection />
+        {/* Mirror Council Team */}
+        <MirrorCouncilTeam />
         
-        {/* Footer */}
-        <footer className="bg-gray-900 text-white py-12 px-4">
+        {/* Paradox Footer */}
+        <footer 
+          style={{
+            background: `
+              linear-gradient(135deg, 
+                rgba(0, 0, 0, 0.95) 0%, 
+                rgba(131, 56, 236, 0.1) 30%, 
+                rgba(255, 0, 110, 0.05) 70%, 
+                rgba(0, 0, 0, 0.98) 100%)
+            `,
+            backdropFilter: 'blur(20px)',
+            borderTop: '1px solid rgba(86, 236, 106, 0.2)'
+          }}
+          className="text-white py-12 px-4"
+        >
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-3 gap-8 mb-8">
               <div>
-                <h3 className="text-xl font-bold mb-4 text-primary-500">Geckoz</h3>
-                <p className="text-gray-400 mb-4">
-                  2222 gecko degenerates who think owning JPEGs makes them entrepreneurs. Spoiler: it doesn't, but it's fun.
+                <h3 
+                  style={{
+                    fontSize: '1.25rem',
+                    fontWeight: 'bold',
+                    marginBottom: '1rem',
+                    background: `linear-gradient(45deg, var(--dimension-1), var(--dimension-2), var(--dimension-3))`,
+                    backgroundSize: '300% 300%',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    animation: 'paradoxTextShift 8s ease-in-out infinite'
+                  }}
+                >
+                  Greedy Geckoz ∞
+                </h3>
+                <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginBottom: '1rem' }}>
+                  2222 interdimensional geckoz existing across infinite realities. Where greed transcends physics and JPEGs become metaphysical entities.
                 </p>
-                <div className="text-sm text-gray-500">
-                  Built with 💚 and questionable life choices
+                <div style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.5)' }}>
+                  Built with 🌀 paradox energy and impossible geometry
                 </div>
               </div>
               <div>
-                <h4 className="font-semibold mb-4">Collection Info</h4>
-                <ul className="space-y-2 text-gray-400 text-sm">
-                  <li>Supply: 2,222 Overpriced JPEGs</li>
-                  <li>Price: 0.0169 SOL (bargain!)</li>
-                  <li>Lottery: 5 random winners total</li>
-                  <li>Prize: ~0.93 SOL each (better than your portfolio)</li>
+                <h4 style={{ fontWeight: '600', marginBottom: '1rem', color: 'var(--dimension-2)' }}>
+                  Dimensional Stats
+                </h4>
+                <ul style={{ listStyle: 'none', padding: 0 }}>
+                  <li style={{ marginBottom: '0.5rem', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
+                    Supply: 2,222 Impossible Geckoz
+                  </li>
+                  <li style={{ marginBottom: '0.5rem', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
+                    Price: 0.0169 SOL per reality breach
+                  </li>
+                  <li style={{ marginBottom: '0.5rem', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
+                    Lottery: 5 dimensional winners
+                  </li>
+                  <li style={{ marginBottom: '0.5rem', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
+                    Prize: ~{mintStats.lotteryPool} SOL (per dimension)
+                  </li>
                 </ul>
               </div>
               <div>
-                <h4 className="font-semibold mb-4">Community</h4>
-                <div className="flex space-x-4">
+                <h4 style={{ fontWeight: '600', marginBottom: '1rem', color: 'var(--dimension-3)' }}>
+                  Cross-Reality Links
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   <a 
                     href="https://twitter.com/greedygeckoz" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-primary-500 transition-colors"
+                    style={{ 
+                      color: 'rgba(255, 255, 255, 0.7)', 
+                      textDecoration: 'none',
+                      transition: 'color 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--dimension-1)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'}
                   >
-                    Twitter
+                    🐦 Twitter Timeline
                   </a>
                   <a 
                     href="https://t.me/+TjyUbcWEorNlNDcx" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-primary-500 transition-colors"
+                    style={{ 
+                      color: 'rgba(255, 255, 255, 0.7)', 
+                      textDecoration: 'none',
+                      transition: 'color 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--dimension-2)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'}
                   >
-                    Telegram
+                    💬 Telegram Void
                   </a>
                   <a 
                     href="#" 
-                    className="text-gray-400 hover:text-primary-500 transition-colors"
+                    style={{ 
+                      color: 'rgba(255, 255, 255, 0.7)', 
+                      textDecoration: 'none',
+                      transition: 'color 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--dimension-3)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'}
                   >
-                    Magic Eden
+                    🎭 Magic Eden Portal
                   </a>
                 </div>
               </div>
             </div>
-            <div className="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
-              © 2025 Geckoz. All rights reserved. This is definitely not financial advice (seriously, don't listen to geckoz about money).
+            <div 
+              style={{
+                borderTop: '1px solid rgba(86, 236, 106, 0.2)',
+                paddingTop: '2rem',
+                textAlign: 'center',
+                color: 'rgba(255, 255, 255, 0.5)',
+                fontSize: '0.875rem'
+              }}
+            >
+              © 2025 Greedy Geckoz ∞. All rights reserved across infinite dimensions. 
+              This is definitely not financial advice in any reality (seriously, don't trust interdimensional geckoz with your portfolio).
             </div>
           </div>
         </footer>

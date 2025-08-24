@@ -191,7 +191,7 @@ class GeckoMintService {
       }
 
       // Check if collection is sold out
-      const available = this.getAvailableGeckos()
+      const available = this.getAvailableGeckoz()
       if (available.length === 0) {
         throw new Error('Collection sold out!')
       }
@@ -244,7 +244,7 @@ class GeckoMintService {
       console.log('Payment confirmed! Processing mint...')
 
       // Update state
-      this.mintedGeckos.add(selectedGecko.id)
+      this.mintedGeckoz.add(selectedGecko.id)
       this.lotteryState.totalMinted++
 
       let totalGeckos = 1
@@ -262,7 +262,7 @@ class GeckoMintService {
         for (let i = 0; i < 2; i++) {
           const additionalGecko = this.selectRandomGecko()
           if (additionalGecko) {
-            this.mintedGeckos.add(additionalGecko.id)
+            this.mintedGeckoz.add(additionalGecko.id)
           }
         }
 
@@ -317,7 +317,7 @@ class GeckoMintService {
         geckoData: generativeResult?.gecko || selectedGecko, // Use generated gecko if available
         txHash,
         lotteryWon: isWinner,
-        totalGeckos,
+        totalGeckoz: totalGeckos,
         solReceived,
         nftMintAddress: generativeResult?.nftMintResult?.mintAddress,
         nftTxSignature: generativeResult?.nftMintResult?.txSignature,
@@ -350,7 +350,7 @@ class GeckoMintService {
       }
 
       // Check if we have enough geckos available
-      const available = this.getAvailableGeckos()
+      const available = this.getAvailableGeckoz()
       if (available.length < quantity) {
         throw new Error(`Only ${available.length} geckos available, you requested ${quantity}`)
       }
@@ -409,7 +409,7 @@ class GeckoMintService {
         }
 
         // Mark as minted
-        this.mintedGeckos.add(selectedGecko.id)
+        this.mintedGeckoz.add(selectedGecko.id)
         this.lotteryState.totalMinted++
         mintedGeckos.push(selectedGecko)
         totalGeckosReceived++
@@ -430,7 +430,7 @@ class GeckoMintService {
           for (let j = 0; j < 2; j++) {
             const additionalGecko = this.selectRandomGecko()
             if (additionalGecko) {
-              this.mintedGeckos.add(additionalGecko.id)
+              this.mintedGeckoz.add(additionalGecko.id)
               mintedGeckos.push(additionalGecko)
             }
           }
@@ -478,17 +478,17 @@ class GeckoMintService {
       return {
         success: true,
         txHash,
-        mintedGeckos,
+        mintedGeckoz: mintedGeckos,
         lotteryWon: hasLotteryWins,
         lotteryWinners,
-        totalGeckos: totalGeckosReceived,
+        totalGeckoz: totalGeckosReceived,
         solReceived: totalLotteryWinnings,
         totalLotteryWinnings,
         nftMintResults,
         nftMintAddress: nftMintResults[0]?.mintAddress,
         nftTxSignature: nftMintResults[0]?.txSignature,
         // Generative system data
-        generatedGeckos: generativeResults.map(r => r.gecko).filter(Boolean),
+        generatedGeckoz: generativeResults.map(r => r.gecko).filter(Boolean),
         // For backwards compatibility
         geckoId: mintedGeckos[0]?.id,
         geckoData: mintedGeckos[0]
@@ -507,7 +507,7 @@ class GeckoMintService {
     return {
       totalMinted: this.lotteryState.totalMinted,
       totalSupply: MINT_CONFIG.MAX_SUPPLY,
-      availableGeckos: this.getAvailableGeckos().length,
+      availableGeckos: this.getAvailableGeckoz().length,
       lotteryWinnersCount: this.lotteryState.winnersCount,
       lotteryWinnersRemaining: MINT_CONFIG.LOTTERY_WINNERS_COUNT - this.lotteryState.winnersCount,
       lotteryPool: MINT_CONFIG.LOTTERY_PRIZE_SOL,
@@ -521,7 +521,7 @@ class GeckoMintService {
       totalMinted: 0,
       winners: []
     }
-    this.mintedGeckos = new Set<number>()
+    this.mintedGeckoz = new Set<number>()
     this.saveMintState()
   }
 }

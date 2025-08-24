@@ -22,13 +22,13 @@ const SARCASTIC_MESSAGES = {
     "Broke much? 💸 Maybe try the couch cushions for spare change?",
     "Your wallet's emptier than your trading strategy 📉",
     "Time to ask mom for lunch money? 🍼",
-    "Even the geckos are laughing at your balance 🦎😂",
+    "Even the geckoz are laughing at your balance 🦎😂",
     "Sir, this is a Wendy's... wait, wrong broke person 🍟"
   ],
   walletNotConnected: [
     "Connect your wallet, genius 🧠 (if you have one)",
     "Wallet? What wallet? Connect it first! 👛",
-    "The geckos can't find your money if you don't connect your wallet 🔍",
+    "The geckoz can't find your money if you don't connect your wallet 🔍",
     "Step 1: Connect wallet. Step 2: Lose money. Simple! 📚"
   ],
   mintFailed: [
@@ -38,7 +38,7 @@ const SARCASTIC_MESSAGES = {
     "Try again, or don't. We're not your financial advisor 🤷‍♂️"
   ],
   soldOut: [
-    "Too slow! All geckos found better homes 🏠",
+    "Too slow! All geckoz found better homes 🏠",
     "You snooze, you lose! Classic FOMO victim 😴",
     "Sold out faster than your last good investment 📊"
   ],
@@ -49,7 +49,7 @@ const SARCASTIC_MESSAGES = {
     "Your parents would be so proud... or concerned 👨‍👩‍👧‍👦"
   ],
   lotteryWin: [
-    "WAIT... YOU WON?! The geckos must be drunk! 🍺🦎",
+    "WAIT... YOU WON?! The geckoz must be drunk! 🍺🦎",
     "Somebody call the newspaper! A miracle happened! 📰",
     "Your luck just peaked for the decade 📈🎰",
     "The gecko gods have blessed your broke soul! 🙏✨"
@@ -191,7 +191,7 @@ export const useGeckoNotifications = () => {
     addNotification(
       'success',
       "LOTTERY WINNER! 🏆",
-      `${getRandomMessage('lotteryWin')} You won ${geckoCount} geckos + ${solAmount} SOL!`,
+      `${getRandomMessage('lotteryWin')} You won ${geckoCount} geckoz + ${solAmount} SOL!`,
       12000
     )
   }
