@@ -58,9 +58,12 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
   const descentProgress = Math.max(0, Math.min(1, currentLayer / (layers.length - 1)))
   const totalCost = MINT_CONFIG.PRICE_SOL * mintQuantity
   const canAfford = userBalance >= totalCost
-  const soldOut = (realMintStats.availableGeckoz || 0) === 0
-  const maxQuantity = Math.min(10, realMintStats.availableGeckoz || 0)
+  const availableCount = realMintStats.availableGeckoz || 769 // Fallback to default available count
+  const soldOut = availableCount === 0
+  const maxQuantity = Math.max(1, Math.min(10, availableCount)) // Ensure at least 1 option
   const lotteryWinnersLeft = realMintStats.lotteryWinnersRemaining
+  
+  // Mint stats calculated
 
   // Initialize connection and mint service based on environment
   useEffect(() => {

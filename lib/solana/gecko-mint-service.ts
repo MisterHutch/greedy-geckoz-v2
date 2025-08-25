@@ -507,7 +507,7 @@ class GeckoMintService {
     return {
       totalMinted: this.lotteryState.totalMinted,
       totalSupply: MINT_CONFIG.MAX_SUPPLY,
-      availableGeckos: this.getAvailableGeckoz().length,
+      availableGeckoz: this.getAvailableGeckoz().length,
       lotteryWinnersCount: this.lotteryState.winnersCount,
       lotteryWinnersRemaining: MINT_CONFIG.LOTTERY_WINNERS_COUNT - this.lotteryState.winnersCount,
       lotteryPool: MINT_CONFIG.LOTTERY_PRIZE_SOL,

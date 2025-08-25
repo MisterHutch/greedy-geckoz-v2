@@ -139,7 +139,7 @@ export default function EnvironmentToggle({ currentEnv, onEnvChange }: Environme
 
 // Hook for managing environment state
 export const useEnvironment = () => {
-  const [environment, setEnvironment] = useState<Environment>('devnet') // Default to devnet for testing
+  const [environment, setEnvironment] = useState<Environment>('mainnet') // Default to mainnet for production
 
   useEffect(() => {
     // Load from localStorage
