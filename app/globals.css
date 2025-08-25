@@ -407,6 +407,81 @@ input[type="number"] {
   animation: float 3s ease-in-out infinite;
 }
 
+/* Time Warp Animation Keyframes */
+@keyframes cosmicPulse {
+  0% { 
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.2) rotate(180deg);
+    opacity: 0.7;
+  }
+  100% { 
+    transform: scale(1) rotate(360deg);
+    opacity: 1;
+  }
+}
+
+@keyframes dimensionalShift {
+  0% { 
+    background-position: 0% 0%;
+    filter: hue-rotate(0deg);
+  }
+  25% {
+    background-position: 100% 0%;
+    filter: hue-rotate(90deg);
+  }
+  50% {
+    background-position: 100% 100%;
+    filter: hue-rotate(180deg);
+  }
+  75% {
+    background-position: 0% 100%;
+    filter: hue-rotate(270deg);
+  }
+  100% { 
+    background-position: 0% 0%;
+    filter: hue-rotate(360deg);
+  }
+}
+
+@keyframes realityGlitch {
+  0%, 100% { 
+    transform: translateX(0) translateY(0) scale(1);
+    opacity: 1;
+  }
+  20% { 
+    transform: translateX(-2px) translateY(2px) scale(0.98);
+    opacity: 0.8;
+  }
+  40% { 
+    transform: translateX(2px) translateY(-1px) scale(1.02);
+    opacity: 0.9;
+  }
+  60% { 
+    transform: translateX(-1px) translateY(1px) scale(0.99);
+    opacity: 0.85;
+  }
+  80% { 
+    transform: translateX(1px) translateY(-2px) scale(1.01);
+    opacity: 0.95;
+  }
+}
+
+@keyframes quantumFlicker {
+  0%, 100% { opacity: 1; }
+  10% { opacity: 0.9; }
+  20% { opacity: 1; }
+  30% { opacity: 0.8; }
+  40% { opacity: 1; }
+  50% { opacity: 0.7; }
+  60% { opacity: 1; }
+  70% { opacity: 0.9; }
+  80% { opacity: 1; }
+  90% { opacity: 0.85; }
+}
+
 /* Lottery glow effect */
 .lottery-glow {
   box-shadow: 0 0 20px rgba(86, 236, 106, 0.3);

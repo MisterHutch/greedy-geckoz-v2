@@ -10,6 +10,7 @@ import GeckoMintService, { MINT_CONFIG } from '../../lib/solana/gecko-mint-servi
 import GeckoNotification, { useGeckoNotifications } from './GeckoNotification'
 import EnvironmentToggle, { useEnvironment } from './EnvironmentToggle'
 import { useScrollValue } from '../../lib/paradox/scroll-controller'
+import TimeWarpAnimation from './TimeWarpAnimation'
 
 interface MintDescentProps {
   mintStats: {
@@ -41,6 +42,7 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
   const [showMintPopup, setShowMintPopup] = useState(false)
   const [mintService, setMintService] = useState<GeckoMintService | null>(null)
   const [realMintStats, setRealMintStats] = useState(mintStats)
+  const [showTimeWarp, setShowTimeWarp] = useState(false)
   
   const containerRef = useRef<HTMLDivElement>(null)
   const { scrollY, paradoxIntensity } = useScrollValue()
@@ -126,6 +128,7 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
     }
 
     setIsMinting(true)
+    setShowTimeWarp(true) // Start time warp animation
     setCurrentLayer(4) // Jump to success layer
     
     try {
@@ -196,6 +199,7 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
       setCurrentLayer(0)
     } finally {
       setIsMinting(false)
+      // Time warp will auto-close after its animation completes
     }
   }
 
@@ -700,6 +704,13 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
           />
         ))}
       </div>
+
+      {/* Time Warp Animation Overlay */}
+      <TimeWarpAnimation
+        isActive={showTimeWarp}
+        mintQuantity={mintQuantity}
+        onComplete={() => setShowTimeWarp(false)}
+      />
     </section>
   )
 }
