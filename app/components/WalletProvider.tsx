@@ -12,7 +12,7 @@ import {
   TrustWalletAdapter,
 } from '@solana/wallet-adapter-wallets'
 
-require('@solana/wallet-adapter-react-ui/styles.css')
+// CSS styles are imported in layout.tsx to avoid HMR issues
 
 interface Props {
   children: ReactNode

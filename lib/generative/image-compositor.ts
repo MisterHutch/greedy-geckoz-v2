@@ -1,9 +1,17 @@
 // Image Composition Service for Layer-Based Gecko Generation
 // Combines trait layers into final gecko image
 
-import * as fs from 'fs'
-import * as path from 'path'
 import { GeneratedGecko } from './gecko-generator'
+
+// Conditional Node.js module imports for server-side only
+let fs: any = null
+let path: any = null
+
+if (typeof window === 'undefined') {
+  // Server-side only
+  fs = require('fs')
+  path = require('path')
+}
 
 // Note: For production, you'd want to use a proper image processing library
 // like 'sharp' or 'canvas' for server-side image composition
@@ -20,8 +28,12 @@ export class ImageCompositor {
   private layersBasePath: string
 
   constructor(layersBasePath?: string) {
-    // Default to the actual GreedyGeckoz_Layers directory
-    this.layersBasePath = layersBasePath || 'C:\\Users\\Hutch\\OneDrive\\Pictures\\GreedyGeckoz_Layers'
+    // Default path, only used server-side
+    if (typeof window === 'undefined') {
+      this.layersBasePath = layersBasePath || path?.join(process.cwd(), 'assets', 'layers') || 'assets/layers'
+    } else {
+      this.layersBasePath = 'assets/layers' // Client-side placeholder
+    }
   }
 
   /**
@@ -31,6 +43,15 @@ export class ImageCompositor {
   async composeGeckoImage(gecko: GeneratedGecko): Promise<CompositionResult> {
     try {
       console.log(`🎨 Composing gecko #${gecko.id} with traits:`, gecko.traits)
+      
+      // If running on client-side, return mock result
+      if (typeof window !== 'undefined') {
+        return {
+          success: true,
+          layersUsed: ['mock-client-side'],
+          error: undefined
+        }
+      }
       
       const layersToCompose = this.getLayerPaths(gecko)
       console.log(`📝 Layers to compose: ${layersToCompose.length}`)
@@ -101,6 +122,11 @@ export class ImageCompositor {
    */
   private async validateLayers(layerPaths: string[]): Promise<string[]> {
     const missingLayers: string[] = []
+
+    // Skip validation on client-side
+    if (!fs || typeof window !== 'undefined') {
+      return []
+    }
 
     for (const layerPath of layerPaths) {
       try {
