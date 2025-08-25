@@ -11,6 +11,9 @@ import GeckoNotification, { useGeckoNotifications } from './GeckoNotification'
 import EnvironmentToggle, { useEnvironment } from './EnvironmentToggle'
 import { useScrollValue } from '../../lib/paradox/scroll-controller'
 import TimeWarpAnimation from './TimeWarpAnimation'
+import CoinFlipGamble from './CoinFlipGamble'
+import CoinFlipAnimation from './CoinFlipAnimation'
+import { GamblingErrorBoundary } from './ErrorBoundary'
 
 interface MintDescentProps {
   mintStats: {
@@ -43,6 +46,10 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
   const [mintService, setMintService] = useState<GeckoMintService | null>(null)
   const [realMintStats, setRealMintStats] = useState(mintStats)
   const [showTimeWarp, setShowTimeWarp] = useState(false)
+  const [showGambleChoice, setShowGambleChoice] = useState(false)
+  const [showCoinFlip, setShowCoinFlip] = useState(false)
+  const [userGambleChoice, setUserGambleChoice] = useState<'heads' | 'tails' | null>(null)
+  const [coinFlipResult, setCoinFlipResult] = useState<'heads' | 'tails' | null>(null)
   
   const containerRef = useRef<HTMLDivElement>(null)
   const { scrollY, paradoxIntensity } = useScrollValue()
@@ -111,6 +118,7 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
     return () => clearInterval(interval)
   }, [publicKey, mintService])
 
+  // Phase 1: Initial mint button click - show gamble choice
   const handleMint = async () => {
     if (!connected || !publicKey || !mintService) {
       notifications.showWalletNotConnected()
@@ -127,11 +135,79 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
       return
     }
 
+    // Show gambling choice modal first
+    setShowGambleChoice(true)
+  }
+
+  // Phase 2a: User chooses to gamble
+  const handleGambleChoice = async (choice: 'heads' | 'tails') => {
+    if (!mintService || !connected || !publicKey) {
+      notifications.showWalletNotConnected()
+      return
+    }
+
+    setShowGambleChoice(false)
+    setUserGambleChoice(choice)
     setIsMinting(true)
-    setShowTimeWarp(true) // Start time warp animation
-    setCurrentLayer(4) // Jump to success layer
-    
+
     try {
+      console.log(`🎰 Starting gambling flow: ${mintQuantity} geckoz, chose ${choice}`)
+      
+      // Step 1: Process initial payment
+      const paymentLoadingId = notifications.addNotification(
+        'info',
+        `💰 Processing payment for ${mintQuantity} geckoz...`,
+        `Cost: ${totalCost} SOL`,
+        0
+      )
+      
+      const paymentResult = await mintService.processPaymentOnly(wallet, mintQuantity)
+      notifications.removeNotification(paymentLoadingId)
+      
+      if (!paymentResult.success) {
+        throw new Error(paymentResult.error || 'Payment failed')
+      }
+
+      console.log(`✅ Initial payment successful: ${paymentResult.transactionId}`)
+      
+      // Step 2: Execute coin flip gamble
+      setShowCoinFlip(true)
+      
+      const gambleResult = await mintService.coinFlipGamble(wallet, mintQuantity, choice)
+      setCoinFlipResult(gambleResult.result)
+      
+      console.log(`🎯 Gamble result:`, gambleResult)
+      
+      // Store the complete result for later processing
+      setMintResult(gambleResult)
+      
+    } catch (error) {
+      console.error('Gambling flow failed:', error)
+      notifications.addNotification(
+        'error',
+        'Gambling Failed 😞',
+        (error as Error)?.message || 'Unknown error occurred',
+        5000
+      )
+      resetGamblingState()
+    }
+  }
+
+  // Phase 2b: User chooses to skip gambling (normal mint)
+  const handleSkipGambling = async () => {
+    if (!mintService || !connected || !publicKey) {
+      notifications.showWalletNotConnected()
+      return
+    }
+
+    setShowGambleChoice(false)
+    setIsMinting(true)
+    setShowTimeWarp(true) // Use time warp for normal minting
+    setCurrentLayer(4)
+
+    try {
+      console.log(`🔄 Standard minting flow: ${mintQuantity} geckoz`)
+      
       const loadingId = notifications.addNotification(
         'info',
         `Processing Mint on ${environment.environment.toUpperCase()}...`,
@@ -147,60 +223,126 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
       
       notifications.removeNotification(loadingId)
       
-      if (result.success) {
-        const updatedStats = mintService.getMintStats()
-        setRealMintStats(updatedStats)
-        setMintResult(result)
-        setShowMintPopup(true)
-        
-        if (result.lotteryWon) {
-          if (result.lotteryWinners && result.lotteryWinners.length > 1) {
-            notifications.addNotification(
-              'success',
-              `🎉 MULTIPLE LOTTERY WINS! 🎉`,
-              `You won ${result.lotteryWinners.length} lotteries! +${result.totalLotteryWinnings} SOL + ${result.totalGeckoz} total geckoz!`,
-              8000
-            )
-          } else {
-            notifications.showLotteryWin(result.totalGeckoz || 3, result.solReceived || 0.98)
-          }
-        } else {
-          if (mintQuantity > 1) {
-            notifications.addNotification(
-              'success',
-              `🦎 Successfully minted ${mintQuantity} geckoz!`,
-              `Your ${mintQuantity} geckoz have been added to your wallet. No lottery wins this time, but hey, you've got some sweet JPEGs!`,
-              5000
-            )
-          } else {
-            notifications.showMintSuccess(result.geckoId || 0)
-          }
-        }
-        
-        // Refresh balance
-        setTimeout(async () => {
-          try {
-            const connection = new Connection(environment.getEndpoint())
-            const balance = await connection.getBalance(publicKey)
-            setUserBalance(balance / LAMPORTS_PER_SOL)
-          } catch (error) {
-            console.error('Failed to refresh balance:', error)
-          }
-        }, 2000)
-        
-      } else {
-        notifications.showMintFailed(result.error)
-        setCurrentLayer(0) // Reset to beginning on failure
-      }
-
+      await processMintSuccess(result)
+      
     } catch (error) {
-      console.error('Mint failed:', error)
-      notifications.showMintFailed((error as Error)?.message)
-      setCurrentLayer(0)
+      console.error('Standard mint failed:', error)
+      await processMintError(error)
     } finally {
       setIsMinting(false)
-      // Time warp will auto-close after its animation completes
     }
+  }
+
+  // Phase 3: Coin flip animation completes - process results
+  const handleCoinFlipComplete = async () => {
+    setShowCoinFlip(false)
+    
+    if (!mintResult || !userGambleChoice || !coinFlipResult) {
+      console.error('Missing data for coin flip completion')
+      resetGamblingState()
+      return
+    }
+
+    const won = userGambleChoice === coinFlipResult
+    
+    try {
+      if (won && mintResult.success) {
+        console.log(`🎉 User won gamble! Minted ${mintResult.finalQuantity} geckoz`)
+        setCurrentLayer(4)
+        await processMintSuccess(mintResult, true)
+      } else if (!won) {
+        console.log(`💀 User lost gamble! Paid double, got nothing`)
+        notifications.addNotification(
+          'error',
+          '💀 You Lost the Coin Flip!',
+          `Paid ${(totalCost * 2).toFixed(4)} SOL but received no geckoz. Better luck next time!`,
+          8000
+        )
+        setCurrentLayer(0)
+      } else {
+        throw new Error(mintResult.error || 'Mint failed after winning gamble')
+      }
+    } catch (error) {
+      console.error('Post-flip processing failed:', error)
+      await processMintError(error)
+    } finally {
+      resetGamblingState()
+    }
+  }
+
+  // Utility: Process successful mint (gambling or normal)
+  const processMintSuccess = async (result: any, isGambleWin = false) => {
+    const updatedStats = mintService?.getMintStats()
+    if (updatedStats) {
+      setRealMintStats(updatedStats)
+    }
+    
+    setMintResult(result)
+    setShowMintPopup(true)
+    
+    // Handle lottery wins
+    if (result.lotteryWon || result.lotteryWinner) {
+      const winCount = result.lotteryWinners?.length || 1
+      const totalWinnings = result.totalLotteryWinnings || result.lotteryPrize || 0
+      
+      if (winCount > 1) {
+        notifications.addNotification(
+          'success',
+          `🎉 MULTIPLE LOTTERY WINS! 🎉`,
+          `You won ${winCount} lotteries! +${totalWinnings} SOL + ${result.totalGeckoz || result.finalQuantity || mintQuantity} total geckoz!`,
+          8000
+        )
+      } else {
+        notifications.showLotteryWin(result.totalGeckoz || result.finalQuantity || 3, result.solReceived || totalWinnings || 0.98)
+      }
+    } else {
+      // Standard success notification
+      const geckoCount = result.totalGeckoz || result.finalQuantity || mintQuantity
+      if (geckoCount > 1) {
+        const successMsg = isGambleWin 
+          ? `🎰 GAMBLE WON! Successfully minted ${geckoCount} geckoz!`
+          : `🦎 Successfully minted ${geckoCount} geckoz!`
+          
+        notifications.addNotification(
+          'success',
+          successMsg,
+          `Your ${geckoCount} geckoz have been added to your wallet. ${isGambleWin ? 'Gambling pays off!' : 'No lottery wins this time, but hey, you\'ve got some sweet JPEGs!'}`,
+          5000
+        )
+      } else {
+        notifications.showMintSuccess(result.geckoId || 0)
+      }
+    }
+    
+    // Refresh balance
+    setTimeout(async () => {
+      try {
+        const connection = new Connection(environment.getEndpoint())
+        const balance = await connection.getBalance(publicKey!)
+        setUserBalance(balance / LAMPORTS_PER_SOL)
+      } catch (error) {
+        console.error('Failed to refresh balance:', error)
+      }
+    }, 2000)
+  }
+
+  // Utility: Process mint error
+  const processMintError = async (error: any) => {
+    notifications.showMintFailed((error as Error)?.message)
+    setCurrentLayer(0)
+    setIsMinting(false)
+    resetGamblingState()
+  }
+
+  // Utility: Reset all gambling state
+  const resetGamblingState = () => {
+    setIsMinting(false)
+    setShowGambleChoice(false)
+    setShowCoinFlip(false)
+    setShowTimeWarp(false)
+    setUserGambleChoice(null)
+    setCoinFlipResult(null)
+    setMintResult(null)
   }
 
   const LayerComponent = ({ layer, index }: { layer: MintLayer, index: number }) => {
@@ -231,7 +373,7 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
           borderRadius: '24px',
           padding: '3rem',
           transformStyle: 'preserve-3d',
-          zIndex: isActive ? 30 : Math.max(1, 10 - index)
+          zIndex: isActive ? 10 : Math.max(1, 5 - index)
         }}
         animate={{
           scale: isActive ? 1 : 0.9,
@@ -678,7 +820,7 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
           display: 'flex',
           flexDirection: 'column',
           gap: '1rem',
-          zIndex: 100
+          zIndex: 20
         }}
       >
         {layers.map((layer, index) => (
@@ -705,12 +847,38 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
         ))}
       </div>
 
-      {/* Time Warp Animation Overlay */}
-      <TimeWarpAnimation
-        isActive={showTimeWarp}
-        mintQuantity={mintQuantity}
-        onComplete={() => setShowTimeWarp(false)}
-      />
+      {/* Modal Overlays - Proper z-index management */}
+      <AnimatePresence>
+        {showTimeWarp && (
+          <TimeWarpAnimation
+            isActive={showTimeWarp}
+            mintQuantity={mintQuantity}
+            onComplete={() => setShowTimeWarp(false)}
+          />
+        )}
+        
+        {showGambleChoice && (
+          <GamblingErrorBoundary>
+            <CoinFlipGamble
+              isActive={showGambleChoice}
+              mintQuantity={mintQuantity}
+              onChoice={handleGambleChoice}
+              onSkip={handleSkipGambling}
+            />
+          </GamblingErrorBoundary>
+        )}
+        
+        {showCoinFlip && (
+          <GamblingErrorBoundary>
+            <CoinFlipAnimation
+              isActive={showCoinFlip}
+              userChoice={userGambleChoice || 'heads'}
+              result={coinFlipResult || 'heads'}
+              onComplete={handleCoinFlipComplete}
+            />
+          </GamblingErrorBoundary>
+        )}
+      </AnimatePresence>
     </section>
   )
 }

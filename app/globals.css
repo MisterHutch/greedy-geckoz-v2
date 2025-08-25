@@ -446,6 +446,33 @@ input[type="number"] {
   }
 }
 
+/* Modal and Overlay Improvements */
+.coin-flip-modal {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.coin-flip-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0); /* Hardware acceleration */
+}
+
+.coin-flip-button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Prevent modal flicker */
+.modal-overlay {
+  will-change: opacity;
+  transform: translateZ(0);
+}
+
+.modal-content {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
 @keyframes realityGlitch {
   0%, 100% { 
     transform: translateX(0) translateY(0) scale(1);
@@ -634,19 +661,23 @@ input[type="number"] {
 
 /* Force cursor visibility on high z-index elements */
 [class*="z-50"], [class*="z-[50]"], [class*="z-40"], [class*="z-[40]"], 
-[class*="z-30"], [class*="z-[30]"], [class*="z-9999"], [class*="z-[9999]"] {
+[class*="z-30"], [class*="z-[30]"], [class*="z-60"], [class*="z-[60]"],
+[class*="z-61"], [class*="z-[61]"], [class*="z-9999"], [class*="z-[9999]"] {
   cursor: default !important;
 }
 
 [class*="z-50"] *, [class*="z-[50]"] *, [class*="z-40"] *, [class*="z-[40]"] *, 
-[class*="z-30"] *, [class*="z-[30]"] *, [class*="z-9999"] *, [class*="z-[9999]"] * {
+[class*="z-30"] *, [class*="z-[30]"] *, [class*="z-60"] *, [class*="z-[60]"] *,
+[class*="z-61"] *, [class*="z-[61]"] *, [class*="z-9999"] *, [class*="z-[9999]"] * {
   cursor: inherit !important;
 }
 
 [class*="z-50"] button, [class*="z-[50]"] button, [class*="z-40"] button, [class*="z-[40]"] button,
-[class*="z-30"] button, [class*="z-[30]"] button, [class*="z-9999"] button, [class*="z-[9999]"] button,
+[class*="z-30"] button, [class*="z-[30]"] button, [class*="z-60"] button, [class*="z-[60]"] button,
+[class*="z-61"] button, [class*="z-[61]"] button, [class*="z-9999"] button, [class*="z-[9999]"] button,
 [class*="z-50"] a, [class*="z-[50]"] a, [class*="z-40"] a, [class*="z-[40]"] a,
-[class*="z-30"] a, [class*="z-[30]"] a, [class*="z-9999"] a, [class*="z-[9999]"] a {
+[class*="z-30"] a, [class*="z-[30]"] a, [class*="z-60"] a, [class*="z-[60]"] a,
+[class*="z-61"] a, [class*="z-[61]"] a, [class*="z-9999"] a, [class*="z-[9999]"] a {
   cursor: pointer !important;
 }
 
@@ -831,5 +862,21 @@ input[type="number"] {
   75% { 
     clip-path: polygon(0% 20%, 80% 0%, 100% 80%, 20% 100%); 
     filter: blur(1px) hue-rotate(270deg); 
+  }
+}
+
+/* Improved Mobile Support */
+@media (max-width: 768px) {
+  .coin-flip-modal {
+    padding: 1rem;
+  }
+  
+  .coin-flip-modal h2 {
+    font-size: 2rem !important;
+  }
+  
+  .coin-flip-button {
+    padding: 0.75rem 1.5rem !important;
+    font-size: 1rem !important;
   }
 }

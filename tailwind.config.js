@@ -61,6 +61,13 @@ module.exports = {
       screens: {
         'xs': '475px',
       },
+      zIndex: {
+        '60': '60',
+        '61': '61',
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+      },
     },
   },
   plugins: [],

@@ -3,6 +3,7 @@ import { WalletContextState } from '@solana/wallet-adapter-react'
 import collectionData from '../../public/data/collection-2025.json'
 import MetaplexNFTService, { NFTMintResult } from '../metaplex/nft-service'
 import GenerativeMintService from '../generative/generative-mint-service'
+import { SecureRandomnessService, SecureRandomResult } from '../security/secure-randomness'
 
 export const MINT_CONFIG = {
   PRICE_SOL: 0.0169,
@@ -523,6 +524,131 @@ class GeckoMintService {
     }
     this.mintedGeckoz = new Set<number>()
     this.saveMintState()
+  }
+
+  // Double-or-Nothing Gambling System
+  async processPaymentOnly(wallet: WalletContextState, quantity: number = 1): Promise<{ success: boolean, transactionId?: string, error?: string }> {
+    try {
+      if (!wallet.connected || !wallet.publicKey || !wallet.signTransaction) {
+        throw new Error('Wallet not connected')
+      }
+
+      const totalCost = MINT_CONFIG.PRICE_SOL * quantity
+      console.log(`💰 Processing payment for ${quantity} geckoz (${totalCost} SOL)`)
+
+      // Create and send payment transaction
+      const treasuryPubkey = new PublicKey(this.treasuryAddress)
+      const transaction = await this.createPaymentTransaction(wallet.publicKey, treasuryPubkey, totalCost)
+      const signedTx = await wallet.signTransaction(transaction)
+      
+      const txId = await this.connection.sendRawTransaction(signedTx.serialize(), {
+        skipPreflight: false,
+        preflightCommitment: 'processed'
+      })
+
+      const confirmation = await this.connection.confirmTransaction(txId, 'confirmed')
+      if (confirmation.value.err) {
+        throw new Error('Payment transaction failed')
+      }
+
+      console.log(`✅ Payment successful: ${txId}`)
+      return { success: true, transactionId: txId }
+    } catch (error) {
+      console.error('Payment processing failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  }
+
+  async coinFlipGamble(
+    wallet: WalletContextState, 
+    quantity: number, 
+    userChoice: 'heads' | 'tails'
+  ): Promise<{ 
+    success: boolean, 
+    result: 'heads' | 'tails', 
+    won: boolean, 
+    finalQuantity: number,
+    geckos?: any[],
+    transactionSignature?: string,
+    error?: string,
+    totalCostPaid?: number
+  }> {
+    try {
+      console.log(`🎰 Coin flip gamble: ${quantity} geckoz, user chose ${userChoice}`)
+      
+      // Use secure randomness service for improved security
+      const randomnessService = SecureRandomnessService.getInstance()
+      const secureRandom: SecureRandomResult = await randomnessService.generateSecureRandom({
+        connection: this.connection,
+        userPublicKey: wallet.publicKey?.toString()
+      })
+      
+      const result = secureRandom.result
+      const won = userChoice === result
+      
+      // Log gambling details for audit trail
+      console.log('🎰 Gambling audit trail:', {
+        userChoice,
+        result,
+        won,
+        timestamp: secureRandom.timestamp,
+        isSecure: secureRandom.isSecure,
+        proofHash: secureRandom.proof.substring(0, 16) + '...'
+      })
+
+      console.log(`🪙 Coin landed: ${result}, User ${won ? 'WON' : 'LOST'}`)
+      
+      const baseCost = MINT_CONFIG.PRICE_SOL * quantity
+
+      if (won) {
+        // User won - NO additional payment needed, mint double quantity
+        // They already paid baseCost upfront, now they get 2x value
+        console.log(`🚀 User won! Minting ${quantity * 2} geckoz for the ${baseCost} SOL already paid`)
+        
+        const finalQuantity = quantity * 2
+        const mintResult = await this.mintMultipleGeckoz(wallet, finalQuantity)
+        
+        if (mintResult.success) {
+          console.log(`🎉 Successfully minted ${finalQuantity} geckoz! Great value - you got 2x for your money!`)
+        }
+        
+        return { 
+          success: mintResult.success, 
+          result, 
+          won: true, 
+          finalQuantity,
+          geckos: mintResult.geckos,
+          transactionSignature: mintResult.transactionSignature,
+          error: mintResult.error,
+          totalCostPaid: baseCost
+        }
+      } else {
+        // User lost - they forfeit their initial payment, get nothing
+        // This is the fair "double or nothing" - they lose their original payment
+        console.log(`💀 User lost! No additional charge, but they forfeit their ${baseCost} SOL payment and get 0 geckoz`)
+        
+        return { 
+          success: true, 
+          result, 
+          won: false, 
+          finalQuantity: 0,
+          geckos: [],
+          transactionSignature: 'gambling_loss_no_additional_tx',
+          error: 'You lost the coin flip - original payment forfeited, no geckoz minted',
+          totalCostPaid: baseCost
+        }
+      }
+    } catch (error) {
+      console.error('Coin flip gamble failed:', error)
+      return { 
+        success: false, 
+        result: 'heads', 
+        won: false, 
+        finalQuantity: 0, 
+        error: (error as Error).message,
+        totalCostPaid: 0
+      }
+    }
   }
 }
 
