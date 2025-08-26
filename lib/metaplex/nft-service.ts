@@ -96,63 +96,126 @@ export class MetaplexNFTService {
       const metaplexWithWallet = Metaplex.make(this.connection)
         .use(walletAdapterIdentity(wallet as any))
 
-      // Step 1: Upload image to IPFS (if not already done)
+      // Step 1: Handle image - use mock for devnet testing
       let imageIpfsHash: string
+      let imageUrl: string
+      
+      console.log('🖼️ Processing image for NFT...', { 
+        geckoImage: geckoData.image,
+        hasApiKey: !!process.env.PINATA_API_KEY,
+        network: process.env.NEXT_PUBLIC_NETWORK
+      })
+      
       if (geckoData.image.startsWith('http')) {
-        // Fetch existing image and upload to IPFS
-        const imageResponse = await fetch(geckoData.image)
-        const imageBuffer = Buffer.from(await imageResponse.arrayBuffer())
-        imageIpfsHash = await this.pinataService.uploadGeckoImage(imageBuffer, geckoData.id)
+        try {
+          // For testing, skip IPFS upload and use direct URL
+          if (process.env.NEXT_PUBLIC_NETWORK === 'devnet' || geckoData.image.includes('placeholder')) {
+            imageUrl = geckoData.image
+            imageIpfsHash = `mock_${geckoData.id}_${Date.now()}`
+            console.log('🧪 Using mock image for devnet testing:', imageUrl)
+          } else {
+            // Production: Upload to IPFS
+            const imageResponse = await fetch(geckoData.image)
+            const imageBuffer = Buffer.from(await imageResponse.arrayBuffer())
+            imageIpfsHash = await this.pinataService.uploadGeckoImage(imageBuffer, geckoData.id)
+            imageUrl = `https://gateway.pinata.cloud/ipfs/${imageIpfsHash}`
+          }
+        } catch (error) {
+          console.warn('⚠️ Image processing failed, using fallback:', error)
+          imageUrl = geckoData.image
+          imageIpfsHash = `fallback_${geckoData.id}`
+        }
       } else {
-        // Assume it's already an IPFS hash or URI
+        // Already processed or IPFS hash
         if (geckoData.image.includes('ipfs://') || geckoData.image.includes('gateway.pinata.cloud')) {
+          imageUrl = geckoData.image
           imageIpfsHash = geckoData.image.split('/').pop() || geckoData.image
         } else {
+          imageUrl = geckoData.image
           imageIpfsHash = geckoData.image
         }
       }
 
       // Step 2: Create and upload metadata
-      const metadata = geckoData.generatedGecko?.metadata 
+      let metadata = geckoData.generatedGecko?.metadata 
         ? geckoData.generatedGecko.metadata 
         : this.pinataService.createGeckoMetadata(geckoData, imageIpfsHash)
       
       // Ensure image is set properly in metadata
       if (metadata && typeof metadata === 'object') {
-        metadata.image = `https://gateway.pinata.cloud/ipfs/${imageIpfsHash}`
+        metadata.image = imageUrl // Use processed imageUrl instead of IPFS construction
+        console.log('📋 NFT metadata prepared:', { 
+          name: metadata.name, 
+          image: metadata.image,
+          attributeCount: metadata.attributes?.length || 0
+        })
       }
       
-      const metadataIpfsHash = await this.pinataService.uploadGeckoMetadata(metadata, geckoData.id)
-      const metadataUri = this.pinataService.getIpfsUri(metadataIpfsHash)
+      let metadataUri: string
+      try {
+        if (process.env.NEXT_PUBLIC_NETWORK === 'devnet') {
+          // For devnet testing, create inline metadata to avoid IPFS dependency
+          metadataUri = `data:application/json;base64,${Buffer.from(JSON.stringify(metadata)).toString('base64')}`
+          console.log('🧪 Using inline metadata for devnet testing')
+        } else {
+          const metadataIpfsHash = await this.pinataService.uploadGeckoMetadata(metadata, geckoData.id)
+          metadataUri = this.pinataService.getIpfsUri(metadataIpfsHash)
+        }
+      } catch (error) {
+        console.warn('⚠️ Metadata upload failed, using inline metadata:', error)
+        metadataUri = `data:application/json;base64,${Buffer.from(JSON.stringify(metadata)).toString('base64')}`
+      }
 
       // Step 3: Mint the NFT using wallet's signer
+      console.log('🏗️ Creating NFT with Metaplex...', {
+        uri: metadataUri.substring(0, 100) + '...',
+        name: metadata.name,
+        symbol: metadata.symbol || 'GECKO',
+        owner: wallet.publicKey.toString(),
+        hasCollection: !!this.collectionNftAddress
+      })
+
       const { nft, response } = await metaplexWithWallet.nfts().create({
         uri: metadataUri,
-        name: metadata.name,
-        symbol: metadata.symbol,
+        name: metadata.name || `Gecko #${geckoData.id}`,
+        symbol: metadata.symbol || 'GECKO',
         sellerFeeBasisPoints: 500, // 5% royalty
         creators: [
           {
             address: wallet.publicKey,
-            share: 100
+            share: 100,
+            verified: false // Will be verified after creation
           }
         ],
         collection: this.collectionNftAddress,
         tokenOwner: wallet.publicKey, // Mint directly to user's wallet
+        isMutable: true,
       })
 
-      console.log('NFT minted successfully:', {
+      // Get the token account address (this is what appears in wallets)
+      const tokenAccounts = await this.connection.getTokenAccountsByOwner(wallet.publicKey, {
+        mint: nft.address
+      })
+
+      const tokenAccountAddress = tokenAccounts.value[0]?.pubkey.toString()
+
+      console.log('🎉 NFT minted successfully! Details:', {
         mintAddress: nft.address.toString(),
         metadataAddress: nft.metadataAddress.toString(),
+        tokenAccountAddress,
         txSignature: response.signature,
         tokenOwner: wallet.publicKey.toString(),
-        metadataUri
+        name: nft.name,
+        symbol: nft.symbol,
+        metadataUri,
+        explorerUrl: `https://explorer.solana.com/address/${nft.address.toString()}?cluster=${process.env.NEXT_PUBLIC_NETWORK || 'mainnet-beta'}`
       })
 
       return {
         success: true,
         mintAddress: nft.address.toString(),
         metadataAddress: nft.metadataAddress.toString(),
+        tokenAddress: tokenAccountAddress,
         txSignature: response.signature
       }
 

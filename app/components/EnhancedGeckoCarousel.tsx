@@ -214,11 +214,12 @@ export default function EnhancedGeckoCarousel() {
     if (!isAutoPlaying) return
     
     const interval = setInterval(() => {
-      nextGecko()
+      setActiveIndex((prev) => (prev + 1) % geckoz.length)
+      setShowTraits(false)
     }, 6000)
     
     return () => clearInterval(interval)
-  }, [isAutoPlaying])
+  }, [isAutoPlaying, geckoz.length])
 
   // Resume auto-play after 10 seconds of inactivity
   useEffect(() => {
@@ -233,6 +234,12 @@ export default function EnhancedGeckoCarousel() {
 
   const activeGecko = geckoz[activeIndex]
   const rarityColors = getRarityColor(activeGecko.rarity)
+  
+  // Debug logging to track trait display issues
+  useEffect(() => {
+    console.log(`🦎 Gecko Portal Debug - Index: ${activeIndex}, ID: ${activeGecko.id}, Name: ${activeGecko.name}`)
+    console.log('🎯 Current Gecko Traits:', activeGecko.traits)
+  }, [activeIndex, activeGecko.id, activeGecko.name, activeGecko.traits])
 
   return (
     <section 
@@ -464,6 +471,7 @@ export default function EnhancedGeckoCarousel() {
                   Traits
                 </h4>
                 <div 
+                  key={`expanded-traits-${activeIndex}-${activeGecko.id}`}
                   style={{
                     display: 'grid',
                     gridTemplateColumns: '1fr',
@@ -498,6 +506,7 @@ export default function EnhancedGeckoCarousel() {
 
           {/* Gecko Traits Display */}
           <div 
+            key={`traits-${activeIndex}-${activeGecko.id}`}
             style={{
               marginTop: 'auto',
               padding: '1rem',
