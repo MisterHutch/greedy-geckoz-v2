@@ -606,7 +606,7 @@ class GeckoMintService {
         console.log(`🚀 User won! Minting ${quantity * 2} geckoz for the ${baseCost} SOL already paid`)
         
         const finalQuantity = quantity * 2
-        const mintResult = await this.mintMultipleGeckoz(wallet, finalQuantity)
+        const mintResult = await this.mintMultipleGeckos(wallet, finalQuantity)
         
         if (mintResult.success) {
           console.log(`🎉 Successfully minted ${finalQuantity} geckoz! Great value - you got 2x for your money!`)
@@ -617,8 +617,8 @@ class GeckoMintService {
           result, 
           won: true, 
           finalQuantity,
-          geckos: mintResult.geckos,
-          transactionSignature: mintResult.transactionSignature,
+          geckos: mintResult.mintedGeckoz || mintResult.generatedGeckoz,
+          transactionSignature: mintResult.txHash || mintResult.nftTxSignature,
           error: mintResult.error,
           totalCostPaid: baseCost
         }

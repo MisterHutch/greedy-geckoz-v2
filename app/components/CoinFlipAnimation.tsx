@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface CoinFlipAnimationProps {
   isActive: boolean
@@ -13,6 +13,12 @@ interface CoinFlipAnimationProps {
 export default function CoinFlipAnimation({ isActive, userChoice, result, onComplete }: CoinFlipAnimationProps) {
   const [phase, setPhase] = useState(0) // 0: flip, 1: zoom, 2: result
   const [flipCount, setFlipCount] = useState(0)
+  const onCompleteRef = useRef(onComplete)
+  
+  // Keep the ref current
+  useEffect(() => {
+    onCompleteRef.current = onComplete
+  }, [onComplete])
   
   const won = userChoice === result
   
@@ -23,17 +29,22 @@ export default function CoinFlipAnimation({ isActive, userChoice, result, onComp
       return
     }
     
+    console.log(`🎭 Starting coin flip animation - user chose: ${userChoice}, result will be: ${result}`)
+    
     // Phase progression with realistic timing
     const timer1 = setTimeout(() => {
+      console.log('⏱️ Phase 1 - Starting zoom in')
       setPhase(1) // Start zoom in
     }, 3000) // Let coin flip for 3 seconds
     
     const timer2 = setTimeout(() => {
+      console.log(`⏱️ Phase 2 - Showing result: ${result} (won: ${won})`)
       setPhase(2) // Show result
     }, 4500) // Zoom for 1.5 seconds
     
     const timer3 = setTimeout(() => {
-      onComplete()
+      console.log('⏰ Coin flip animation timer complete - calling onComplete')
+      onCompleteRef.current()
     }, 7000) // Show result for 2.5 seconds
     
     return () => {
@@ -41,7 +52,7 @@ export default function CoinFlipAnimation({ isActive, userChoice, result, onComp
       clearTimeout(timer2)
       clearTimeout(timer3)
     }
-  }, [isActive, onComplete])
+  }, [isActive]) // Removed onComplete from deps to prevent re-running
   
   // Update flip count during animation
   useEffect(() => {

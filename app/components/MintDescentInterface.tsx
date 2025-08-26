@@ -235,10 +235,15 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
 
   // Phase 3: Coin flip animation completes - process results
   const handleCoinFlipComplete = async () => {
+    console.log('🎯 Coin flip animation completed! Starting result processing...')
+    console.log('🔍 Debug - mintResult:', mintResult)
+    console.log('🔍 Debug - userGambleChoice:', userGambleChoice)
+    console.log('🔍 Debug - coinFlipResult:', coinFlipResult)
+    
     setShowCoinFlip(false)
     
     if (!mintResult || !userGambleChoice || !coinFlipResult) {
-      console.error('Missing data for coin flip completion')
+      console.error('❌ Missing data for coin flip completion - resetting state')
       resetGamblingState()
       return
     }
@@ -336,6 +341,7 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
 
   // Utility: Reset all gambling state
   const resetGamblingState = () => {
+    console.log('🔄 Resetting gambling state - clearing all states')
     setIsMinting(false)
     setShowGambleChoice(false)
     setShowCoinFlip(false)
@@ -343,6 +349,7 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
     setUserGambleChoice(null)
     setCoinFlipResult(null)
     setMintResult(null)
+    console.log('✅ Gambling state reset complete')
   }
 
   const LayerComponent = ({ layer, index }: { layer: MintLayer, index: number }) => {
@@ -868,12 +875,12 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
           </GamblingErrorBoundary>
         )}
         
-        {showCoinFlip && (
+        {showCoinFlip && userGambleChoice && coinFlipResult && (
           <GamblingErrorBoundary>
             <CoinFlipAnimation
               isActive={showCoinFlip}
-              userChoice={userGambleChoice || 'heads'}
-              result={coinFlipResult || 'heads'}
+              userChoice={userGambleChoice}
+              result={coinFlipResult}
               onComplete={handleCoinFlipComplete}
             />
           </GamblingErrorBoundary>
