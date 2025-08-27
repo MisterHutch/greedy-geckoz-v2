@@ -183,8 +183,7 @@ export class MetaplexNFTService {
         creators: [
           {
             address: wallet.publicKey,
-            share: 100,
-            verified: false // Will be verified after creation
+            share: 100
           }
         ],
         collection: this.collectionNftAddress,
