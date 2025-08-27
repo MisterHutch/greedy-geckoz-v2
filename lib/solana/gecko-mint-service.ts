@@ -340,7 +340,7 @@ class GeckoMintService {
     }
   }
 
-  async mintMultipleGeckos(wallet: WalletContextState, quantity: number): Promise<MintResult> {
+  async mintMultipleGeckos(wallet: WalletContextState, quantity: number, skipPayment: boolean = false): Promise<MintResult> {
     try {
       if (!wallet.connected || !wallet.publicKey || !wallet.signTransaction) {
         throw new Error('Wallet not connected')
@@ -356,44 +356,50 @@ class GeckoMintService {
         throw new Error(`Only ${available.length} geckos available, you requested ${quantity}`)
       }
 
-      // Check user balance for total cost
-      const balance = await this.connection.getBalance(wallet.publicKey)
-      const balanceSOL = balance / LAMPORTS_PER_SOL
-      const totalCost = MINT_CONFIG.PRICE_SOL * quantity
+      let txHash = 'no-payment-tx'
       
-      if (balanceSOL < totalCost) {
-        throw new Error(`Insufficient balance. Need ${totalCost} SOL`)
+      if (!skipPayment) {
+        // Check user balance for total cost
+        const balance = await this.connection.getBalance(wallet.publicKey)
+        const balanceSOL = balance / LAMPORTS_PER_SOL
+        const totalCost = MINT_CONFIG.PRICE_SOL * quantity
+        
+        if (balanceSOL < totalCost) {
+          throw new Error(`Insufficient balance. Need ${totalCost} SOL`)
+        }
+
+        // Create payment transaction for total amount
+        let treasuryPubkey: PublicKey
+        try {
+          treasuryPubkey = new PublicKey(this.treasuryAddress)
+        } catch (error) {
+          throw new Error(`Invalid treasury address: ${this.treasuryAddress}`)
+        }
+        
+        const paymentTransaction = await this.createPaymentTransaction(
+          wallet.publicKey,
+          treasuryPubkey,
+          totalCost
+        )
+
+        // Sign and send payment transaction
+        console.log(`Requesting wallet signature for ${quantity} geckos (${totalCost} SOL)...`)
+        const signedTransaction = await wallet.signTransaction(paymentTransaction)
+        
+        console.log('Sending payment transaction...')
+        txHash = await this.connection.sendRawTransaction(signedTransaction.serialize(), {
+          skipPreflight: false,
+          preflightCommitment: 'confirmed'
+        })
+
+        // Wait for confirmation
+        console.log('Confirming transaction...', txHash)
+        await this.connection.confirmTransaction(txHash, 'confirmed')
+        
+        console.log('Payment confirmed! Processing bulk mint...')
+      } else {
+        console.log('🎁 Skipping payment - minting NFTs for free (gambling win)...')
       }
-
-      // Create payment transaction for total amount
-      let treasuryPubkey: PublicKey
-      try {
-        treasuryPubkey = new PublicKey(this.treasuryAddress)
-      } catch (error) {
-        throw new Error(`Invalid treasury address: ${this.treasuryAddress}`)
-      }
-      
-      const paymentTransaction = await this.createPaymentTransaction(
-        wallet.publicKey,
-        treasuryPubkey,
-        totalCost
-      )
-
-      // Sign and send payment transaction
-      console.log(`Requesting wallet signature for ${quantity} geckos (${totalCost} SOL)...`)
-      const signedTransaction = await wallet.signTransaction(paymentTransaction)
-      
-      console.log('Sending payment transaction...')
-      const txHash = await this.connection.sendRawTransaction(signedTransaction.serialize(), {
-        skipPreflight: false,
-        preflightCommitment: 'confirmed'
-      })
-
-      // Wait for confirmation
-      console.log('Confirming transaction...', txHash)
-      await this.connection.confirmTransaction(txHash, 'confirmed')
-      
-      console.log('Payment confirmed! Processing bulk mint...')
 
       // Now mint each gecko individually and check lottery for each
       const mintedGeckos: GeckoData[] = []
@@ -443,7 +449,11 @@ class GeckoMintService {
       this.saveMintState()
 
       // Step 4: Generate and mint unique NFTs for all minted geckos
-      console.log(`Payment confirmed! Now generating ${mintedGeckos.length} unique NFTs...`)
+      console.log(`🎨 Payment confirmed! Now generating ${mintedGeckos.length} unique NFTs...`)
+      console.log(`🔍 Debug - Wallet address: ${wallet.publicKey?.toString()}`)
+      console.log(`🔍 Debug - Network: ${process.env.NEXT_PUBLIC_NETWORK}`)
+      console.log(`🔍 Debug - RPC: ${this.connection.rpcEndpoint}`)
+      
       const generativeResults: any[] = []
       
       try {
@@ -458,13 +468,22 @@ class GeckoMintService {
         
         bulkResults.forEach((result, index) => {
           if (result.success) {
-            console.log(`✅ Generative NFT ${index + 1} minted: ${result.nftMintResult?.mintAddress}`)
+            console.log(`✅ Generative NFT ${index + 1} minted successfully!`)
+            console.log(`📍 Mint Address: ${result.nftMintResult?.mintAddress}`)
+            console.log(`📝 Metadata Address: ${result.nftMintResult?.metadataAddress}`)
+            console.log(`🏦 Token Account: ${result.nftMintResult?.tokenAddress}`)
+            console.log(`📋 TX Signature: ${result.nftMintResult?.txSignature}`)
             console.log(`🎨 Traits: ${Object.values(result.gecko?.traits || {}).join(', ')}`)
             if (result.gecko?.isUltraRare) {
               console.log(`🌟 ULTRA RARE GECKO #${index + 1}!`)
             }
+            
+            // Log explorer link
+            const network = process.env.NEXT_PUBLIC_NETWORK || 'mainnet-beta'
+            console.log(`🔗 View in Explorer: https://explorer.solana.com/address/${result.nftMintResult?.mintAddress}?cluster=${network}`)
           } else {
             console.error(`❌ Generative NFT ${index + 1} failed:`, result.error)
+            console.error(`🔍 Full error details:`, result)
           }
         })
         
@@ -606,7 +625,7 @@ class GeckoMintService {
         console.log(`🚀 User won! Minting ${quantity * 2} geckoz for the ${baseCost} SOL already paid`)
         
         const finalQuantity = quantity * 2
-        const mintResult = await this.mintMultipleGeckos(wallet, finalQuantity)
+        const mintResult = await this.mintMultipleGeckos(wallet, finalQuantity, true) // Skip payment - already paid!
         
         if (mintResult.success) {
           console.log(`🎉 Successfully minted ${finalQuantity} geckoz! Great value - you got 2x for your money!`)

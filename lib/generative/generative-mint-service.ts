@@ -294,6 +294,7 @@ export class GenerativeMintService {
       console.log(`🧪 Mock IPFS hashes generated: img=${mockImageHash}, meta=${mockMetadataHash}`)
       
       // Attempt to mint the NFT with mock metadata
+      console.log(`🔨 Attempting to mint mock NFT for gecko #${gecko.id}...`)
       const nftMintResult = await this.nftService.mintGeckoNFT(wallet, {
         id: gecko.id,
         name: gecko.name,
@@ -304,7 +305,13 @@ export class GenerativeMintService {
       })
       
       if (nftMintResult.success) {
-        console.log(`✅ Mock NFT minted successfully: ${nftMintResult.mintAddress}`)
+        console.log(`✅ Mock NFT minted successfully!`)
+        console.log(`📍 Mint Address: ${nftMintResult.mintAddress}`)
+        console.log(`🏦 Token Account: ${nftMintResult.tokenAddress}`)
+        console.log(`📋 TX Signature: ${nftMintResult.txSignature}`)
+      } else {
+        console.error(`❌ Mock NFT minting failed:`, nftMintResult.error)
+        console.error(`🔍 Full NFT mint result:`, nftMintResult)
       }
       
       return {
