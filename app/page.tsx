@@ -10,6 +10,7 @@ import MirrorCouncilTeam from './components/MirrorCouncilTeam'
 import LotterySection from './components/LotterySection'
 import EnvironmentToggle, { useEnvironment } from './components/EnvironmentToggle'
 import GeckoNotification, { useGeckoNotifications } from './components/GeckoNotification'
+import NFTTestComponent from './components/NFTTestComponent'
 import { ParadoxScrollMaster } from '../lib/paradox/scroll-controller'
 
 export default function Home() {
@@ -89,6 +90,9 @@ export default function Home() {
         
         {/* Mirror Council Team */}
         <MirrorCouncilTeam />
+        
+        {/* NFT Test Component */}
+        <NFTTestComponent />
         
         {/* Paradox Footer */}
         <footer 
