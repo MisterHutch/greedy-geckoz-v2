@@ -13,6 +13,7 @@ import { useScrollValue } from '../../lib/paradox/scroll-controller'
 import TimeWarpAnimation from './TimeWarpAnimation'
 import CoinFlipGamble from './CoinFlipGamble'
 import CoinFlipAnimation from './CoinFlipAnimation'
+import MintResultsDisplay from './MintResultsDisplay'
 import { GamblingErrorBoundary } from './ErrorBoundary'
 
 interface MintDescentProps {
@@ -50,6 +51,8 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
   const [showCoinFlip, setShowCoinFlip] = useState(false)
   const [userGambleChoice, setUserGambleChoice] = useState<'heads' | 'tails' | null>(null)
   const [coinFlipResult, setCoinFlipResult] = useState<'heads' | 'tails' | null>(null)
+  const [mintResult, setMintResult] = useState<any>(null)
+  const [showMintResults, setShowMintResults] = useState(false)
   
   const containerRef = useRef<HTMLDivElement>(null)
   const { scrollY, paradoxIntensity } = useScrollValue()
@@ -301,19 +304,62 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
         notifications.showLotteryWin(result.totalGeckoz || result.finalQuantity || 3, result.solReceived || totalWinnings || 0.98)
       }
     } else {
-      // Standard success notification
+      // Enhanced success notification with transaction details
       const geckoCount = result.totalGeckoz || result.finalQuantity || mintQuantity
+      const txSignature = result.transactionSignature || result.txHash || result.nftTxSignature
+      const network = process.env.NEXT_PUBLIC_NETWORK || 'devnet'
+      
+      // Log detailed results for debugging
+      console.log('🎯 MINT SUCCESS DETAILS:', {
+        geckoCount,
+        txSignature,
+        mintAddresses: result.nftMintResults?.map((r: any) => r.mintAddress) || [result.nftMintAddress],
+        tokenAccounts: result.nftMintResults?.map((r: any) => r.tokenAddress) || [result.tokenAddress],
+        geckos: result.geckos || result.mintedGeckoz || result.generatedGeckoz,
+        fullResult: result
+      })
+      
       if (geckoCount > 1) {
         const successMsg = isGambleWin 
           ? `🎰 GAMBLE WON! Successfully minted ${geckoCount} geckoz!`
           : `🦎 Successfully minted ${geckoCount} geckoz!`
+        
+        // Create detailed message with transaction info
+        let detailMessage = `Your ${geckoCount} geckoz have been added to your wallet.`
+        
+        if (txSignature) {
+          detailMessage += `\n\n📋 Transaction: ${txSignature.substring(0, 20)}...`
+          detailMessage += `\n🔗 View on Explorer: https://explorer.solana.com/tx/${txSignature}?cluster=${network}`
+        }
+        
+        // Show mint addresses if available
+        const mintAddresses = result.nftMintResults?.map((r: any) => r.mintAddress) || (result.nftMintAddress ? [result.nftMintAddress] : [])
+        if (mintAddresses.length > 0) {
+          detailMessage += `\n\n📍 Mint Address${mintAddresses.length > 1 ? 'es' : ''}:`
+          mintAddresses.forEach((addr: string, i: number) => {
+            if (addr) {
+              detailMessage += `\n  ${i + 1}. ${addr.substring(0, 20)}...`
+            }
+          })
+        }
+        
+        detailMessage += isGambleWin ? '\n\n🎲 Gambling pays off!' : '\n\n💎 Check your wallet!'
           
         notifications.addNotification(
           'success',
           successMsg,
-          `Your ${geckoCount} geckoz have been added to your wallet. ${isGambleWin ? 'Gambling pays off!' : 'No lottery wins this time, but hey, you\'ve got some sweet JPEGs!'}`,
-          5000
+          detailMessage,
+          12000 // Longer display time for important info
         )
+        
+        // Show detailed mint results display
+        setMintResult(result)
+        setShowMintResults(true)
+        
+        // Trigger wallet refresh after a delay
+        setTimeout(() => {
+          refreshWalletNFTs()
+        }, 3000)
       } else {
         notifications.showMintSuccess(result.geckoId || 0)
       }
@@ -339,6 +385,42 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
     resetGamblingState()
   }
 
+  // Utility: Refresh wallet NFTs (triggers wallet refresh)
+  const refreshWalletNFTs = async () => {
+    try {
+      if (!publicKey || !connected) return
+      
+      console.log('🔄 Refreshing wallet NFTs...')
+      
+      // Create connection to check for new tokens
+      const connection = new Connection(environment.getEndpoint())
+      
+      // Get all token accounts for the wallet
+      const tokenAccounts = await connection.getTokenAccountsByOwner(publicKey, {
+        programId: new (await import('@solana/web3.js')).PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
+      })
+      
+      console.log(`✅ Found ${tokenAccounts.value.length} token accounts in wallet`)
+      
+      // Trigger wallet adapter refresh if available
+      if ('refreshTokenAccounts' in wallet && typeof wallet.refreshTokenAccounts === 'function') {
+        await wallet.refreshTokenAccounts()
+        console.log('✅ Wallet adapter refreshed')
+      }
+      
+      // Add notification to check wallet
+      notifications.addNotification(
+        'info',
+        '👛 Wallet Refresh',
+        'NFTs should now be visible in your wallet. If not, try refreshing your wallet app.',
+        5000
+      )
+      
+    } catch (error) {
+      console.error('❌ Wallet refresh failed:', error)
+    }
+  }
+
   // Utility: Reset all gambling state
   const resetGamblingState = () => {
     console.log('🔄 Resetting gambling state - clearing all states')
@@ -346,6 +428,7 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
     setShowGambleChoice(false)
     setShowCoinFlip(false)
     setShowTimeWarp(false)
+    setShowMintResults(false)
     setUserGambleChoice(null)
     setCoinFlipResult(null)
     setMintResult(null)
@@ -886,6 +969,14 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
           </GamblingErrorBoundary>
         )}
       </AnimatePresence>
+      
+      {/* Mint Results Display */}
+      <MintResultsDisplay
+        isVisible={showMintResults}
+        onClose={() => setShowMintResults(false)}
+        result={mintResult}
+        isGambleWin={mintResult?.won || false}
+      />
     </section>
   )
 }

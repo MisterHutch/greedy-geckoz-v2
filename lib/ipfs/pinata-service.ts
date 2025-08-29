@@ -178,15 +178,39 @@ export class PinataService {
    */
   async testConnection(): Promise<boolean> {
     try {
+      if (!this.apiKey || !this.secretKey) {
+        console.error('❌ Pinata API keys not configured')
+        return false
+      }
+      
+      console.log('🧪 Testing Pinata connection...')
       const response = await axios.get(
         `${this.baseURL}/data/testAuthentication`,
         { headers: this.getHeaders() }
       )
-      return response.data.message === 'Congratulations! You are communicating with the Pinata API!'
-    } catch (error) {
-      console.error('Pinata connection test failed:', error)
+      
+      const isSuccess = response.data.message === 'Congratulations! You are communicating with the Pinata API!'
+      if (isSuccess) {
+        console.log('✅ Pinata connection successful')
+      } else {
+        console.error('❌ Pinata connection failed. Response:', response.data)
+      }
+      return isSuccess
+    } catch (error: any) {
+      console.error('❌ Pinata connection test failed:', error.message)
+      if (error.response) {
+        console.error('Response status:', error.response.status)
+        console.error('Response data:', error.response.data)
+      }
       return false
     }
+  }
+
+  /**
+   * Check if Pinata is properly configured
+   */
+  isConfigured(): boolean {
+    return !!(this.apiKey && this.secretKey)
   }
 }
 
