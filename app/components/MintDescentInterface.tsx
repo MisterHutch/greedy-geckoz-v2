@@ -52,6 +52,8 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
   const [userGambleChoice, setUserGambleChoice] = useState<'heads' | 'tails' | null>(null)
   const [coinFlipResult, setCoinFlipResult] = useState<'heads' | 'tails' | null>(null)
   const [showMintResults, setShowMintResults] = useState(false)
+  const [showCoinFlipResult, setShowCoinFlipResult] = useState(false)
+  const [coinFlipWon, setCoinFlipWon] = useState(false)
   
   const containerRef = useRef<HTMLDivElement>(null)
   const { scrollY, paradoxIntensity } = useScrollValue()
@@ -242,15 +244,40 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
     console.log('🔍 Debug - userGambleChoice:', userGambleChoice)
     console.log('🔍 Debug - coinFlipResult:', coinFlipResult)
     
-    setShowCoinFlip(false)
-    
     if (!mintResult || !userGambleChoice || !coinFlipResult) {
       console.error('❌ Missing data for coin flip completion - resetting state')
+      setShowCoinFlip(false)
       resetGamblingState()
       return
     }
 
     const won = userGambleChoice === coinFlipResult
+    console.log(`🎯 COIN FLIP RESULT: You ${won ? 'WON' : 'LOST'}! (Your choice: ${userGambleChoice}, Result: ${coinFlipResult})`)
+    
+    // First show the coin flip result clearly
+    setShowCoinFlip(false)
+    setCoinFlipWon(won)
+    setShowCoinFlipResult(true)
+    
+    // Add immediate notification
+    notifications.addNotification(
+      won ? 'success' : 'error',
+      won ? '🎉 YOU WON THE COIN FLIP!' : '💀 YOU LOST THE COIN FLIP!',
+      won 
+        ? `🎰 Gambling paid off! You'll receive ${mintResult.finalQuantity || 2} geckos for the price of 1!`
+        : `😭 Tough luck! You paid double but got nothing. The house always wins... sometimes.`,
+      6000
+    )
+    
+    // Wait 3 seconds to let user see the result, then process
+    setTimeout(async () => {
+      await processCoinFlipResult(won)
+    }, 3000)
+  }
+
+  // Process the coin flip result after user has seen the outcome
+  const processCoinFlipResult = async (won: boolean) => {
+    setShowCoinFlipResult(false)
     
     try {
       if (won && mintResult.success) {
@@ -259,12 +286,6 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
         await processMintSuccess(mintResult, true)
       } else if (!won) {
         console.log(`💀 User lost gamble! Paid double, got nothing`)
-        notifications.addNotification(
-          'error',
-          '💀 You Lost the Coin Flip!',
-          `Paid ${(totalCost * 2).toFixed(4)} SOL but received no geckoz. Better luck next time!`,
-          8000
-        )
         setCurrentLayer(0)
       } else {
         throw new Error(mintResult.error || 'Mint failed after winning gamble')
@@ -428,8 +449,10 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
     setShowCoinFlip(false)
     setShowTimeWarp(false)
     setShowMintResults(false)
+    setShowCoinFlipResult(false)
     setUserGambleChoice(null)
     setCoinFlipResult(null)
+    setCoinFlipWon(false)
     setMintResult(null)
     console.log('✅ Gambling state reset complete')
   }
@@ -969,6 +992,61 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
         )}
       </AnimatePresence>
       
+      {/* Coin Flip Result Display */}
+      <AnimatePresence>
+        {showCoinFlipResult && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.5, opacity: 0 }}
+              className="text-center p-8"
+            >
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  rotate: coinFlipWon ? [0, 360, 0] : [0, -10, 10, -10, 0]
+                }}
+                transition={{ duration: 1, repeat: Infinity, repeatDelay: 1 }}
+                className="text-9xl mb-6"
+              >
+                {coinFlipWon ? '🎉' : '💀'}
+              </motion.div>
+              
+              <h2 className={`text-6xl font-bold mb-4 ${coinFlipWon ? 'text-green-400' : 'text-red-400'}`}>
+                {coinFlipWon ? 'YOU WON!' : 'YOU LOST!'}
+              </h2>
+              
+              <div className="text-2xl text-white/80 mb-6">
+                <p>Your choice: <span className="font-bold text-yellow-400">{userGambleChoice?.toUpperCase()}</span></p>
+                <p>Coin result: <span className="font-bold text-yellow-400">{coinFlipResult?.toUpperCase()}</span></p>
+              </div>
+              
+              {coinFlipWon ? (
+                <div className="text-xl text-green-300">
+                  <p className="font-bold">🎰 DOUBLE OR NOTHING PAID OFF!</p>
+                  <p>Processing your {mintResult?.finalQuantity || 2} geckos...</p>
+                </div>
+              ) : (
+                <div className="text-xl text-red-300">
+                  <p className="font-bold">😭 TOUGH LUCK!</p>
+                  <p>You paid double but got nothing...</p>
+                </div>
+              )}
+              
+              <div className="mt-6 text-white/60">
+                <p>Processing results in 3 seconds...</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Mint Results Display */}
       <MintResultsDisplay
         isVisible={showMintResults}
