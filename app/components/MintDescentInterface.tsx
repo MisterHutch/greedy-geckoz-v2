@@ -51,7 +51,6 @@ export default function MintDescentInterface({ mintStats }: MintDescentProps) {
   const [showCoinFlip, setShowCoinFlip] = useState(false)
   const [userGambleChoice, setUserGambleChoice] = useState<'heads' | 'tails' | null>(null)
   const [coinFlipResult, setCoinFlipResult] = useState<'heads' | 'tails' | null>(null)
-  const [mintResult, setMintResult] = useState<any>(null)
   const [showMintResults, setShowMintResults] = useState(false)
   
   const containerRef = useRef<HTMLDivElement>(null)
