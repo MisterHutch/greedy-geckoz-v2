@@ -5,8 +5,8 @@ export async function GET(request: NextRequest) {
   try {
     console.log('🧪 Testing LiveGeckoGenerator...');
     
-    // Dynamic import to prevent client bundling
-    const { liveGeckoGenerator } = await import('@/lib/services/LiveGeckoGenerator');
+    // Use disabled generator for build compatibility
+    const { disabledGeckoGenerator: liveGeckoGenerator } = await import('@/lib/services/DisabledGeckoGenerator');
     
     // Initialize generator
     await liveGeckoGenerator.initialize();
