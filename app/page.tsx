@@ -11,7 +11,7 @@ import LotterySection from './components/LotterySection'
 import EnvironmentToggle, { useEnvironment } from './components/EnvironmentToggle'
 import GeckoNotification, { useGeckoNotifications } from './components/GeckoNotification'
 import NFTTestComponent from './components/NFTTestComponent'
-import { ParadoxScrollMaster } from '../lib/paradox/scroll-controller'
+import { ParadoxScrollMaster } from '@/lib/paradox/scroll-controller'
 
 export default function Home() {
   // Global state
