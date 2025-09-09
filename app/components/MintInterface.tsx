@@ -187,7 +187,7 @@ export default function MintInterface({ mintStats }: MintInterfaceProps) {
   const maxQuantity = Math.min(10, realMintStats.availableGeckoz || 0) // Max 10 or available geckoz
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto px-4">
       {/* Lottery Winner Modal */}
       <AnimatePresence>
         {showLotteryWin && mintResult?.lotteryWon && (

@@ -4,6 +4,7 @@ import collectionData from '../../public/data/collection-2025.json'
 import MetaplexNFTService, { NFTMintResult } from '../metaplex/nft-service'
 import GenerativeMintService from '../generative/generative-mint-service'
 import { SecureRandomnessService, SecureRandomResult } from '../security/secure-randomness'
+import { logger } from '../utils/logger'
 
 export const MINT_CONFIG = {
   PRICE_SOL: 0.0169,
@@ -186,39 +187,121 @@ class GeckoMintService {
   }
 
   async mintGecko(wallet: WalletContextState): Promise<MintResult> {
+    const startTime = Date.now()
+    const walletAddress = wallet.publicKey?.toString()
+    const attemptId = `mint_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    
+    // Log mint attempt start
+    logger.logInfo('mint', 'Mint attempt started', {
+      attemptId,
+      walletAddress,
+      timestamp: new Date().toISOString()
+    }, undefined, walletAddress)
+
     try {
+      // Step 1: Wallet Connection Check
+      logger.logDebug('mint', 'Checking wallet connection', { attemptId }, undefined, walletAddress)
+      
       if (!wallet.connected || !wallet.publicKey || !wallet.signTransaction) {
+        logger.logMintFailure('wallet_connect', 'Wallet not connected or missing capabilities', {
+          attemptId,
+          walletType: wallet.wallet?.adapter?.name || 'unknown',
+          connected: wallet.connected,
+          hasPublicKey: !!wallet.publicKey,
+          hasSignTransaction: !!wallet.signTransaction,
+          timeElapsed: Date.now() - startTime
+        }, walletAddress)
         throw new Error('Wallet not connected')
       }
 
-      // Check if collection is sold out
+      // Step 2: Collection Availability Check
+      logger.logDebug('mint', 'Checking collection availability', { attemptId }, undefined, walletAddress)
+      
       const available = this.getAvailableGeckoz()
       if (available.length === 0) {
+        logger.logMintFailure('balance_check', 'Collection sold out', {
+          attemptId,
+          availableCount: available.length,
+          totalSupply: MINT_CONFIG.MAX_SUPPLY,
+          timeElapsed: Date.now() - startTime
+        }, walletAddress)
         throw new Error('Collection sold out!')
       }
 
-      // Check user balance
+      logger.logInfo('mint', 'Collection availability confirmed', {
+        attemptId,
+        availableCount: available.length,
+        totalSupply: MINT_CONFIG.MAX_SUPPLY
+      }, undefined, walletAddress)
+
+      // Step 3: Balance Check
+      logger.logDebug('mint', 'Checking wallet balance', { attemptId }, undefined, walletAddress)
+      
       const balance = await this.connection.getBalance(wallet.publicKey)
       const balanceSOL = balance / LAMPORTS_PER_SOL
       
+      logger.logInfo('mint', 'Balance retrieved', {
+        attemptId,
+        balanceSOL: balanceSOL,
+        requiredSOL: MINT_CONFIG.PRICE_SOL,
+        sufficient: balanceSOL >= MINT_CONFIG.PRICE_SOL
+      }, undefined, walletAddress)
+      
       if (balanceSOL < MINT_CONFIG.PRICE_SOL) {
+        logger.logMintFailure('balance_check', 'Insufficient balance for mint', {
+          attemptId,
+          balanceSOL,
+          requiredSOL: MINT_CONFIG.PRICE_SOL,
+          shortfall: MINT_CONFIG.PRICE_SOL - balanceSOL,
+          timeElapsed: Date.now() - startTime
+        }, walletAddress)
         throw new Error(`Insufficient balance. Need ${MINT_CONFIG.PRICE_SOL} SOL`)
       }
 
-      // Select random gecko
+      // Step 4: Gecko Selection
+      logger.logDebug('mint', 'Selecting random gecko', { attemptId }, undefined, walletAddress)
+      
       const selectedGecko = this.selectRandomGecko()
       if (!selectedGecko) {
+        logger.logMintFailure('nft_generation', 'No geckos available for selection', {
+          attemptId,
+          availableCount: available.length,
+          timeElapsed: Date.now() - startTime
+        }, walletAddress)
         throw new Error('No geckos available')
       }
 
-      // Check if this mint will be a lottery winner
+      logger.logInfo('mint', 'Gecko selected for mint', {
+        attemptId,
+        geckoId: selectedGecko.id,
+        geckoName: selectedGecko.name
+      }, undefined, walletAddress)
+
+      // Step 5: Lottery Check
+      logger.logDebug('mint', 'Checking lottery status', { attemptId }, undefined, walletAddress)
+      
       const isWinner = this.isLotteryWinner()
       
-      // Create payment transaction with validation
+      logger.logInfo('mint', 'Lottery status determined', {
+        attemptId,
+        isLotteryWinner: isWinner,
+        currentWinnersCount: this.lotteryState.winnersCount,
+        maxWinners: MINT_CONFIG.LOTTERY_WINNERS_COUNT
+      }, undefined, walletAddress)
+
+      // Step 6: Payment Transaction Creation
+      logger.logDebug('mint', 'Creating payment transaction', { attemptId }, undefined, walletAddress)
+      
       let treasuryPubkey: PublicKey
       try {
         treasuryPubkey = new PublicKey(this.treasuryAddress)
       } catch (error) {
+        logger.logMintFailure('payment_tx', 'Invalid treasury address', {
+          attemptId,
+          treasuryAddress: this.treasuryAddress,
+          error: error.message,
+          timeElapsed: Date.now() - startTime
+        }, walletAddress)
         throw new Error(`Invalid treasury address: ${this.treasuryAddress}`)
       }
       
@@ -228,21 +311,85 @@ class GeckoMintService {
         MINT_CONFIG.PRICE_SOL
       )
 
-      // Sign and send payment transaction
-      console.log('Requesting wallet signature for payment...')
-      const signedTransaction = await wallet.signTransaction(paymentTransaction)
-      
-      console.log('Sending payment transaction...')
-      const txHash = await this.connection.sendRawTransaction(signedTransaction.serialize(), {
-        skipPreflight: false,
-        preflightCommitment: 'confirmed'
-      })
+      logger.logInfo('mint', 'Payment transaction created', {
+        attemptId,
+        treasuryAddress: this.treasuryAddress,
+        amount: MINT_CONFIG.PRICE_SOL
+      }, undefined, walletAddress)
 
-      // Wait for confirmation
-      console.log('Confirming transaction...', txHash)
-      await this.connection.confirmTransaction(txHash, 'confirmed')
+      // Step 7: Transaction Signing
+      logger.logDebug('mint', 'Requesting wallet signature for payment', { attemptId }, undefined, walletAddress)
       
-      console.log('Payment confirmed! Processing mint...')
+      let signedTransaction: Transaction
+      try {
+        signedTransaction = await wallet.signTransaction(paymentTransaction)
+        logger.logInfo('mint', 'Transaction signed successfully', { attemptId }, undefined, walletAddress)
+      } catch (error) {
+        logger.logMintFailure('payment_tx', 'Transaction signing failed', {
+          attemptId,
+          error: error.message,
+          walletType: wallet.wallet?.adapter?.name || 'unknown',
+          timeElapsed: Date.now() - startTime
+        }, walletAddress)
+        throw error
+      }
+      
+      // Step 8: Transaction Submission
+      logger.logDebug('mint', 'Submitting payment transaction', { attemptId }, undefined, walletAddress)
+      
+      let txHash: string
+      try {
+        txHash = await this.connection.sendRawTransaction(signedTransaction.serialize(), {
+          skipPreflight: false,
+          preflightCommitment: 'confirmed'
+        })
+        
+        logger.logTransactionState(txHash, 'submitted', {
+          attemptId,
+          geckoId: selectedGecko.id,
+          amount: MINT_CONFIG.PRICE_SOL
+        }, walletAddress)
+        
+      } catch (error) {
+        logger.logMintFailure('payment_tx', 'Transaction submission failed', {
+          attemptId,
+          error: error.message,
+          rpcEndpoint: this.connection.rpcEndpoint,
+          timeElapsed: Date.now() - startTime
+        }, walletAddress)
+        throw error
+      }
+
+      // Step 9: Transaction Confirmation
+      logger.logDebug('mint', 'Awaiting transaction confirmation', { 
+        attemptId, 
+        transactionHash: txHash 
+      }, undefined, walletAddress)
+      
+      try {
+        await this.connection.confirmTransaction(txHash, 'confirmed')
+        
+        logger.logTransactionState(txHash, 'confirmed', {
+          attemptId,
+          geckoId: selectedGecko.id,
+          confirmationTime: Date.now() - startTime
+        }, walletAddress)
+        
+      } catch (error) {
+        logger.logMintFailure('confirmation', 'Transaction confirmation failed', {
+          attemptId,
+          transactionHash: txHash,
+          error: error.message,
+          timeElapsed: Date.now() - startTime
+        }, walletAddress)
+        throw error
+      }
+      
+      logger.logInfo('mint', 'Payment confirmed successfully', {
+        attemptId,
+        transactionHash: txHash,
+        paymentTime: Date.now() - startTime
+      }, undefined, walletAddress)
 
       // Update state
       this.mintedGeckoz.add(selectedGecko.id)
@@ -332,10 +479,29 @@ class GeckoMintService {
       }
 
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Mint failed'
+      const totalTime = Date.now() - startTime
+      
+      // Comprehensive error logging
+      logger.logError('mint', 'Mint attempt failed completely', {
+        attemptId,
+        error: errorMessage,
+        stackTrace: error instanceof Error ? error.stack : undefined,
+        walletType: wallet.wallet?.adapter?.name || 'unknown',
+        walletConnected: wallet.connected,
+        walletAddress,
+        totalTimeElapsed: totalTime,
+        rpcEndpoint: this.connection.rpcEndpoint,
+        network: process.env.NEXT_PUBLIC_NETWORK,
+        environment: process.env.NODE_ENV,
+        timestamp: new Date().toISOString()
+      }, undefined, walletAddress)
+      
       console.error('Mint error:', error)
+      
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Mint failed'
+        error: errorMessage
       }
     }
   }

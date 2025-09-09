@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Download, RotateCcw, Shuffle, Palette, Droplets, Layers, Zap } from 'lucide-react'
 import Header from '../components/Header'
+import { GatedAccess } from '../components/GatedAccess'
 
 interface Particle {
   x: number
@@ -265,8 +266,9 @@ export default function FluidPlayground() {
   }
 
   return (
-    <div className="min-h-screen psychedelic-gradient-hero">
-      <Header />
+    <GatedAccess>
+      <div className="min-h-screen psychedelic-gradient-hero">
+        <Header />
       
       <main className="relative py-8 px-4">
         {/* Overlay for readability */}
@@ -461,6 +463,7 @@ export default function FluidPlayground() {
           </div>
         </div>
       </main>
-    </div>
+      </div>
+    </GatedAccess>
   )
 }

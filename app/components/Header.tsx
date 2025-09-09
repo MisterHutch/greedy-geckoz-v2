@@ -19,22 +19,22 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Logo & Title */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
             <motion.div
-              className="text-2xl"
+              className="text-xl sm:text-2xl flex-shrink-0"
               animate={{ rotate: [0, 5, -5, 0] }}
               transition={{ duration: 3, repeat: Infinity }}
             >
               🦎
             </motion.div>
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 truncate">
                 Geckoz
               </h1>
-              <p className="text-xs text-primary-600 font-medium">
+              <p className="text-xs text-primary-600 font-medium hidden sm:block">
                 Greed is Good
               </p>
             </div>
@@ -81,13 +81,15 @@ export default function Header() {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-3">
-            <WalletButton />
+          <div className="md:hidden flex items-center space-x-2 flex-shrink-0">
+            <div className="scale-90">
+              <WalletButton />
+            </div>
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 text-gray-700 hover:text-primary-600 transition-colors"
+              className="p-1.5 text-gray-700 hover:text-primary-600 transition-colors"
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>

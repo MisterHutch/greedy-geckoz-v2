@@ -293,17 +293,9 @@ export default function EnhancedGeckoCarousel() {
 
       {/* Main Gecko Display */}
       <div
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-16 w-[95%] max-w-7xl px-4 py-8"
         style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4rem',
-          width: '90%',
-          maxWidth: '1400px',
-          height: '70%'
+          minHeight: '70vh'
         }}
       >
         {/* Large Gecko Image */}
@@ -311,8 +303,8 @@ export default function EnhancedGeckoCarousel() {
           key={activeIndex}
           style={{
             position: 'relative',
-            width: '600px',
-            height: '600px',
+            width: 'min(90vw, 600px)',
+            height: 'min(90vw, 600px)',
             borderRadius: '24px',
             background: `linear-gradient(135deg, ${rarityColors.glow}, rgba(0,0,0,0.3))`,
             border: `3px solid ${rarityColors.main}`,
@@ -412,8 +404,8 @@ export default function EnhancedGeckoCarousel() {
         {/* Gecko Info Panel - Positioned Next to Image */}
         <motion.div
           style={{
-            width: '400px',
-            height: '600px',
+            width: 'min(90vw, 400px)',
+            height: 'min(90vw, 600px)',
             background: 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(255, 255, 255, 0.1)',

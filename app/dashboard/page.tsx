@@ -3,10 +3,14 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { Wallet, TrendingUp, TrendingDown, DollarSign, Calendar, RefreshCw, Eye, EyeOff, BarChart3, Activity } from 'lucide-react'
+import { Wallet, TrendingUp, TrendingDown, DollarSign, Calendar, RefreshCw, Eye, EyeOff, BarChart3, Activity, Loader2 } from 'lucide-react'
 import Header from '../components/Header'
 import PnLChart from '../components/PnLChart'
 import WalletButton from '../components/WalletButton'
+import FloatingBox from '../components/FloatingBox'
+import FullScreenPopup from '../components/FullScreenPopup'
+import { GatedAccess } from '../components/GatedAccess'
+import { solscanAPI } from '../../lib/solscan-api'
 
 interface Transaction {
   signature: string
@@ -37,6 +41,8 @@ interface DataPoint {
 export default function Dashboard() {
   const { connected, publicKey } = useWallet()
   const [loading, setLoading] = useState(false)
+  const [isScanning, setIsScanning] = useState(false)
+  const [scanProgress, setScanProgress] = useState('')
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [walletStats, setWalletStats] = useState<WalletStats | null>(null)
   const [selectedPeriod, setSelectedPeriod] = useState('1m')
@@ -56,17 +62,13 @@ export default function Dashboard() {
   // Load data when wallet connects
   useEffect(() => {
     if (connected && publicKey) {
-      setLoading(true)
-      // Simulate loading delay for better UX
-      setTimeout(() => {
-        generateMockData()
-        setLoading(false)
-      }, 1500)
+      loadWalletData(selectedPeriod)
     } else {
       setTransactions([])
       setWalletStats(null)
+      setChartData([])
     }
-  }, [connected, publicKey])
+  }, [connected, publicKey, selectedPeriod]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Generate mock transaction data for demo
   const generateMockData = () => {
@@ -111,12 +113,115 @@ export default function Dashboard() {
     })
 
     // Generate chart data based on selected period
-    generateChartData(selectedPeriod)
+    generateDemoChartData(selectedPeriod)
   }
 
-  // Generate chart data for the selected time period
-  const generateChartData = (period: string) => {
-    const periodConfig = periods.find(p => p.value === period) || periods[2] // Default to 1m
+  // Load real wallet data and generate chart
+  const loadWalletData = async (period: string) => {
+    if (!publicKey || !connected) return
+    
+    setIsScanning(true)
+    setLoading(true)
+    
+    try {
+      const walletAddress = publicKey.toString()
+      const periodConfig = periods.find(p => p.value === period) || periods[2]
+      
+      setScanProgress('Connecting to blockchain...')
+      await new Promise(resolve => setTimeout(resolve, 800)) // UX delay
+      
+      setScanProgress('Scanning transaction history...')
+      const walletData = await solscanAPI.calculateWalletPnL(walletAddress, periodConfig.days)
+      
+      setScanProgress('Processing transaction data...')
+      await new Promise(resolve => setTimeout(resolve, 600))
+      
+      setScanProgress('Generating charts and analytics...')
+      
+      // Convert transactions to our format
+      const convertedTransactions: Transaction[] = walletData.transactions.map(tx => ({
+        signature: tx.signature,
+        timestamp: tx.timestamp,
+        type: tx.type,
+        amount: tx.amount,
+        tokenSymbol: tx.tokenSymbol,
+        price: tx.price,
+        currentPrice: tx.price, // Simplified for now
+        pnl: 0, // Will be calculated
+        pnlPercentage: 0 // Will be calculated
+      }))
+      
+      setTransactions(convertedTransactions)
+      setWalletStats({
+        totalBalance: walletData.summary.totalInvested || 0,
+        totalPnl: walletData.totalPnl,
+        totalPnlPercentage: walletData.totalPnlPercentage,
+        winRate: walletData.winRate,
+        totalTransactions: walletData.transactions.length
+      })
+      
+      // Generate chart data from real transactions
+      generateChartDataFromTransactions(walletData.transactions, periodConfig.days)
+      
+      setScanProgress('Analysis complete!')
+      await new Promise(resolve => setTimeout(resolve, 400))
+      
+    } catch (error) {
+      console.error('Error loading wallet data:', error)
+      setScanProgress('Error: Could not scan wallet. Using demo data.')
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      // Fallback to demo data
+      generateDemoChartData(period)
+    } finally {
+      setIsScanning(false)
+      setLoading(false)
+    }
+  }
+
+  // Generate chart data from real transactions
+  const generateChartDataFromTransactions = (txs: any[], days: number) => {
+    const points: DataPoint[] = []
+    const dailyPnL: Record<string, number> = {}
+    
+    // Initialize daily buckets
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date()
+      date.setDate(date.getDate() - i)
+      const dateStr = date.toISOString().split('T')[0]
+      dailyPnL[dateStr] = 0
+    }
+    
+    // Aggregate transactions by day
+    txs.forEach(tx => {
+      const txDate = new Date(tx.timestamp).toISOString().split('T')[0]
+      if (dailyPnL.hasOwnProperty(txDate)) {
+        const pnl = tx.type === 'sell' ? tx.solAmount : -tx.solAmount
+        dailyPnL[txDate] += pnl
+      }
+    })
+    
+    // Convert to chart data points
+    let cumulative = 0
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date()
+      date.setDate(date.getDate() - i)
+      const dateStr = date.toISOString().split('T')[0]
+      const dailyChange = dailyPnL[dateStr]
+      cumulative += dailyChange
+      
+      points.push({
+        date: dateStr,
+        value: dailyChange,
+        cumulative
+      })
+    }
+    
+    setChartData(points)
+  }
+
+  // Fallback demo data generation
+  const generateDemoChartData = (period: string) => {
+    const periodConfig = periods.find(p => p.value === period) || periods[2]
     const days = periodConfig.days
     
     const points: DataPoint[] = []
@@ -126,8 +231,7 @@ export default function Dashboard() {
       const date = new Date()
       date.setDate(date.getDate() - i)
       
-      // Generate realistic daily P&L with some volatility
-      const dailyChange = (Math.random() - 0.45) * (200 + Math.random() * 300) // Bias toward losses, realistic volatility
+      const dailyChange = (Math.random() - 0.45) * (200 + Math.random() * 300)
       cumulative += dailyChange
       
       points.push({
@@ -143,8 +247,8 @@ export default function Dashboard() {
   // Update chart data when period changes
   const handlePeriodChange = (period: string) => {
     setSelectedPeriod(period)
-    if (connected) {
-      generateChartData(period)
+    if (connected && publicKey) {
+      loadWalletData(period)
     }
   }
 
@@ -181,25 +285,92 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen psychedelic-gradient-hero fly-cursor">
-      <Header />
+    <GatedAccess>
+      <div className="min-h-screen psychedelic-gradient-hero fly-cursor">
+        <Header />
       
-      <main className="relative py-8 px-4">
+      {/* Wallet Scanning Full-Screen Popup */}
+      <FullScreenPopup
+        isOpen={isScanning}
+        onClose={() => {}} // Cannot close while scanning
+        title="Scanning Your Wallet"
+        variant="cosmic"
+      >
+        <div className="text-center py-8">
+          <div className="mb-8">
+            <motion.div
+              animate={{ 
+                rotate: 360,
+                scale: [1, 1.1, 1] 
+              }}
+              transition={{ 
+                rotate: { duration: 2, repeat: Infinity, ease: "linear" },
+                scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
+              }}
+            >
+              <Loader2 className="w-20 h-20 mx-auto text-purple-400" />
+            </motion.div>
+          </div>
+          
+          <h3 className="text-3xl font-bold mb-6 text-white">
+            Analyzing Your Blockchain History
+          </h3>
+          
+          <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto leading-relaxed">
+            We're diving deep into your transaction history across multiple dimensions to calculate 
+            your real P&L. This interdimensional scan might take a moment...
+          </p>
+          
+          <FloatingBox
+            value={scanProgress}
+            label="Current Process"
+            color="var(--dimension-2)"
+            size="lg"
+            variant="glass"
+          />
+          
+          <div className="mt-8">
+            <div className="w-full bg-white/10 rounded-full h-3 backdrop-blur-sm">
+              <motion.div
+                className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 h-3 rounded-full"
+                style={{
+                  backgroundSize: '200% 100%'
+                }}
+                initial={{ width: "0%" }}
+                animate={{ 
+                  width: "100%",
+                  backgroundPosition: ['0% 50%', '100% 50%']
+                }}
+                transition={{ 
+                  width: { duration: 8, ease: "easeInOut" },
+                  backgroundPosition: { duration: 2, repeat: Infinity, ease: "linear" }
+                }}
+              />
+            </div>
+            
+            <p className="text-sm text-purple-300 mt-4">
+              Transcending reality to access your financial data...
+            </p>
+          </div>
+        </div>
+      </FullScreenPopup>
+      
+      <main className="relative py-4 sm:py-6 lg:py-8 px-3 sm:px-4">
         {/* Overlay for readability */}
         <div className="absolute inset-0 bg-white/70"></div>
         
         <div className="relative z-10 max-w-7xl mx-auto">
           {/* Page Header */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-8 sm:mb-12">
             <motion.h1
-              className="text-4xl md:text-6xl font-bold mb-4 trippy-text neon-glow-multicolor"
+              className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 trippy-text neon-glow-multicolor px-2"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
             >
               Portfolio Tracker
             </motion.h1>
             <motion.p
-              className="text-xl text-gray-700 max-w-2xl mx-auto"
+              className="text-sm sm:text-lg lg:text-xl text-gray-700 max-w-2xl mx-auto px-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -258,57 +429,136 @@ export default function Dashboard() {
                 <WalletButton />
               </motion.div>
 
-              {/* Stats Cards */}
+              {/* Floating Stats Boxes */}
               {walletStats && (
-                <motion.div
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  <div className="card">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-sm font-medium text-gray-600">Portfolio Value</h3>
+                <div className="floating-box-grid mb-12">
+                  <FloatingBox
+                    value={showBalance ? formatCurrency(walletStats.totalBalance) : '••••••'}
+                    label="Portfolio Value"
+                    color="var(--reality-primary)"
+                    index={0}
+                    variant="glass"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="text-center flex-1">
+                        <div 
+                          style={{
+                            fontSize: '2rem',
+                            fontWeight: 'bold',
+                            color: 'var(--reality-primary)',
+                            marginBottom: '0.5rem',
+                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                          }}
+                        >
+                          {showBalance ? formatCurrency(walletStats.totalBalance) : '••••••'}
+                        </div>
+                        <div 
+                          style={{
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            fontSize: '0.875rem',
+                            letterSpacing: '0.5px'
+                          }}
+                        >
+                          Portfolio Value
+                        </div>
+                      </div>
                       <button
                         onClick={() => setShowBalance(!showBalance)}
-                        className="text-gray-400 hover:text-gray-600"
+                        className="text-gray-400 hover:text-white transition-colors p-2 rounded-full hover:bg-white/10"
                       >
                         {showBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {showBalance ? formatCurrency(walletStats.totalBalance) : '****'}
-                    </p>
-                  </div>
+                  </FloatingBox>
 
-                  <div className="card">
-                    <h3 className="text-sm font-medium text-gray-600 mb-2">Total P&L</h3>
-                    <p className={`text-2xl font-bold ${getPerformanceColor(walletStats.totalPnl)}`}>
-                      {showBalance ? formatCurrency(walletStats.totalPnl) : '****'}
-                    </p>
-                    <p className={`text-sm ${getPerformanceColor(walletStats.totalPnlPercentage)}`}>
-                      {walletStats.totalPnlPercentage.toFixed(2)}%
-                    </p>
-                  </div>
+                  <FloatingBox
+                    value={showBalance ? formatCurrency(walletStats.totalPnl) : '••••••'}
+                    label="Total P&L"
+                    color={walletStats.totalPnl >= 0 ? 'var(--dimension-3)' : 'var(--dimension-1)'}
+                    index={1}
+                    variant="neon"
+                  >
+                    <div className="text-center">
+                      <div 
+                        style={{
+                          fontSize: '2rem',
+                          fontWeight: 'bold',
+                          color: walletStats.totalPnl >= 0 ? 'var(--dimension-3)' : 'var(--dimension-1)',
+                          marginBottom: '0.25rem',
+                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                        }}
+                      >
+                        {showBalance ? formatCurrency(walletStats.totalPnl) : '••••••'}
+                      </div>
+                      <div 
+                        style={{
+                          color: walletStats.totalPnl >= 0 ? 'rgba(6, 255, 165, 0.8)' : 'rgba(255, 0, 110, 0.8)',
+                          fontSize: '0.875rem',
+                          marginBottom: '0.25rem'
+                        }}
+                      >
+                        {walletStats.totalPnlPercentage.toFixed(2)}%
+                      </div>
+                      <div 
+                        style={{
+                          color: 'rgba(255, 255, 255, 0.8)',
+                          fontSize: '0.75rem',
+                          letterSpacing: '0.5px'
+                        }}
+                      >
+                        Total P&L
+                      </div>
+                    </div>
+                  </FloatingBox>
 
-                  <div className="card">
-                    <h3 className="text-sm font-medium text-gray-600 mb-2">Win Rate</h3>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {walletStats.winRate.toFixed(1)}%
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {Math.floor(walletStats.winRate * walletStats.totalTransactions / 100)} wins
-                    </p>
-                  </div>
+                  <FloatingBox
+                    value={`${walletStats.winRate.toFixed(1)}%`}
+                    label="Win Rate"
+                    color={walletStats.winRate > 50 ? 'var(--dimension-3)' : 'var(--dimension-2)'}
+                    index={2}
+                    variant="organic"
+                  >
+                    <div className="text-center">
+                      <div 
+                        style={{
+                          fontSize: '2rem',
+                          fontWeight: 'bold',
+                          color: walletStats.winRate > 50 ? 'var(--dimension-3)' : 'var(--dimension-2)',
+                          marginBottom: '0.25rem',
+                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                        }}
+                      >
+                        {walletStats.winRate.toFixed(1)}%
+                      </div>
+                      <div 
+                        style={{
+                          color: 'rgba(255, 255, 255, 0.6)',
+                          fontSize: '0.75rem',
+                          marginBottom: '0.25rem'
+                        }}
+                      >
+                        {Math.floor(walletStats.winRate * walletStats.totalTransactions / 100)} wins
+                      </div>
+                      <div 
+                        style={{
+                          color: 'rgba(255, 255, 255, 0.8)',
+                          fontSize: '0.75rem',
+                          letterSpacing: '0.5px'
+                        }}
+                      >
+                        Win Rate
+                      </div>
+                    </div>
+                  </FloatingBox>
 
-                  <div className="card">
-                    <h3 className="text-sm font-medium text-gray-600 mb-2">Total Trades</h3>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {walletStats.totalTransactions}
-                    </p>
-                    <p className="text-sm text-gray-500">transactions</p>
-                  </div>
-                </motion.div>
+                  <FloatingBox
+                    value={walletStats.totalTransactions}
+                    label="Total Trades"
+                    color="var(--dimension-4)"
+                    index={3}
+                    variant="glass"
+                  />
+                </div>
               )}
 
               {/* Sassy AI Commentary */}
@@ -440,6 +690,7 @@ export default function Dashboard() {
           )}
         </div>
       </main>
-    </div>
+      </div>
+    </GatedAccess>
   )
 }

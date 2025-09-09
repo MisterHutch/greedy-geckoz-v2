@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Header from './components/Header'
 import ImpossibleGecko from './components/ImpossibleGecko'
 import EnhancedGeckoCarousel from './components/EnhancedGeckoCarousel'
-import MintDescentInterface from './components/MintDescentInterface'
+import EnhancedMintFlow from './components/EnhancedMintFlow'
 import MirrorCouncilTeam from './components/MirrorCouncilTeam'
 import LotterySection from './components/LotterySection'
 import EnvironmentToggle, { useEnvironment } from './components/EnvironmentToggle'
@@ -82,8 +82,19 @@ export default function Home() {
         {/* Enhanced Gecko Portal Carousel */}
         <EnhancedGeckoCarousel />
         
-        {/* Mint Descent Interface */}
-        <MintDescentInterface mintStats={mintStats} />
+        {/* Enhanced Mint Flow */}
+        <section className="py-20 px-4 relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/20 via-blue-900/20 to-indigo-900/20"></div>
+          <EnhancedMintFlow 
+            lotteryInfo={{
+              totalWinners: 5,
+              winnersRemaining: mintStats.lotteryWinnersRemaining,
+              prizePool: mintStats.lotteryPool
+            }}
+            mintPrice={0.0169}
+            availableGeckos={mintStats.availableGeckoz}
+          />
+        </section>
         
         {/* Lottery Section */}
         <LotterySection mintStats={mintStats} />
