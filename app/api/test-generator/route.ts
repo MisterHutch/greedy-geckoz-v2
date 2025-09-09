@@ -1,10 +1,12 @@
 // Test API endpoint to verify the LiveGeckoGenerator works
 import { NextRequest, NextResponse } from 'next/server';
-import { liveGeckoGenerator } from '@/lib/services/LiveGeckoGenerator';
 
 export async function GET(request: NextRequest) {
   try {
     console.log('🧪 Testing LiveGeckoGenerator...');
+    
+    // Dynamic import to prevent client bundling
+    const { liveGeckoGenerator } = await import('@/lib/services/LiveGeckoGenerator');
     
     // Initialize generator
     await liveGeckoGenerator.initialize();

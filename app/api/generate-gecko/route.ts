@@ -1,22 +1,28 @@
 // API endpoint for generating gecko without minting (for testing/preview)
 import { NextRequest, NextResponse } from 'next/server';
-import { liveGeckoGenerator } from '@/lib/services/LiveGeckoGenerator';
-import { geckoDatabase } from '@/lib/services/GeckoDatabase';
 
 // Initialize services on first request
 let isInitialized = false;
 
 async function initializeServices() {
-  if (isInitialized) return;
+  if (isInitialized) return { generator: null, database: null };
   
   try {
-    console.log('🔧 Initializing services...');
+    console.log('🔧 Dynamically loading services...');
+    
+    // Dynamic imports to prevent bundling with client
+    const { liveGeckoGenerator } = await import('@/lib/services/LiveGeckoGenerator');
+    const { geckoDatabase } = await import('@/lib/services/GeckoDatabase');
+    
     await Promise.all([
       liveGeckoGenerator.initialize(),
       geckoDatabase.initialize()
     ]);
+    
     isInitialized = true;
     console.log('✅ Services initialized successfully');
+    
+    return { generator: liveGeckoGenerator, database: geckoDatabase };
   } catch (error) {
     console.error('❌ Failed to initialize services:', error);
     throw error;
@@ -25,8 +31,12 @@ async function initializeServices() {
 
 export async function GET(request: NextRequest) {
   try {
-    // Initialize services if needed
+    // Initialize services if needed - get them via dynamic import
     await initializeServices();
+    
+    // Dynamic imports for each request to ensure server-only execution
+    const { liveGeckoGenerator } = await import('@/lib/services/LiveGeckoGenerator');
+    const { geckoDatabase } = await import('@/lib/services/GeckoDatabase');
 
     // Get query parameters
     const { searchParams } = new URL(request.url);
