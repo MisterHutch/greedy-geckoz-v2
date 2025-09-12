@@ -509,7 +509,10 @@ export default function EnhancedMintFlow({
 
   return (
     <div className="min-h-screen py-8 px-4">
-      <GeckoNotification />
+      <GeckoNotification 
+        notifications={notifications.notifications} 
+        onDismiss={notifications.removeNotification} 
+      />
       
       <AnimatePresence mode="wait">
         {mintFlow.step === 'selection' && (
