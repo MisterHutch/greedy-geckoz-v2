@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const SOURCE_LAYERS_PATH = 'C:\\Users\\Hutch\\OneDrive\\Pictures\\GreedyGeckoz_Layers';
+const SOURCE_LAYERS_PATH = process.env.GECKO_LAYERS_PATH || 'C:\\Users\\Hutch\\OneDrive\\Pictures\\GreedyGeckoz_Layers';
 const PROJECT_LAYERS_PATH = path.join(__dirname, '..', 'assets', 'layers');
 
 async function copyLayerFiles() {

@@ -1,7 +1,8 @@
 // Live Gecko Generator Service for Production Minting
 // Adapts your local generator for server-side API use
 
-import { createCanvas, loadImage, Image } from 'canvas';
+// Use @napi-rs/canvas which has prebuilt binaries and works on Vercel
+import { createCanvas, loadImage, Image } from '@napi-rs/canvas';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -42,7 +43,8 @@ export class LiveGeckoGenerator {
   private isInitialized = false;
   
   // Configuration
-  private readonly LAYERS_SOURCE = 'C:/Users/Hutch/OneDrive/Pictures/GreedyGeckoz_Layers';
+  // Prefer an env var for deploys; fallback to local dev path
+  private readonly LAYERS_SOURCE = process.env.GECKO_LAYERS_PATH || 'C:/Users/Hutch/OneDrive/Pictures/GreedyGeckoz_Layers';
   private readonly CANVAS_SIZE = 512;
   
   constructor() {

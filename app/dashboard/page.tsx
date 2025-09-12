@@ -356,8 +356,8 @@ export default function Dashboard() {
       </FullScreenPopup>
       
       <main className="relative py-4 sm:py-6 lg:py-8 px-3 sm:px-4">
-        {/* Overlay for readability */}
-        <div className="absolute inset-0 bg-white/70"></div>
+        {/* Overlay for readability (ignore pointer events) */}
+        <div className="absolute inset-0 bg-white/70 pointer-events-none"></div>
         
         <div className="relative z-10 max-w-7xl mx-auto">
           {/* Page Header */}
@@ -411,22 +411,24 @@ export default function Dashboard() {
             <div className="space-y-8">
               {/* Wallet Info & Disconnect */}
               <motion.div
-                className="flex justify-between items-center"
+                className="flex flex-wrap gap-3 justify-between items-center"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 min-w-0">
                   <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center">
                     <Wallet className="w-6 h-6 text-white" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Connected Wallet</p>
-                    <p className="font-mono font-bold">
+                    <p className="font-mono font-bold truncate max-w-[60vw] sm:max-w-none">
                       {publicKey ? `${publicKey.toString().slice(0, 4)}...${publicKey.toString().slice(-4)}` : ''}
                     </p>
                   </div>
                 </div>
-                <WalletButton />
+                <div className="ml-auto">
+                  <WalletButton />
+                </div>
               </motion.div>
 
               {/* Floating Stats Boxes */}
@@ -589,12 +591,12 @@ export default function Dashboard() {
                 transition={{ delay: 0.3 }}
               >
                 <div className="bg-white rounded-xl p-2 shadow-lg border">
-                  <div className="flex space-x-2">
+                  <div className="flex flex-wrap gap-2">
                     {periods.map((period) => (
                       <button
                         key={period.value}
                         onClick={() => handlePeriodChange(period.value)}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                        className={`px-3 py-2 rounded-lg font-medium transition-all ${
                           selectedPeriod === period.value
                             ? 'bg-primary-500 text-white shadow-md'
                             : 'text-gray-600 hover:text-primary-600 hover:bg-gray-50'

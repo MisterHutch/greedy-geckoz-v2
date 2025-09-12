@@ -1,5 +1,6 @@
 // Test API endpoint to verify the LiveGeckoGenerator works
 import { NextRequest, NextResponse } from 'next/server';
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {

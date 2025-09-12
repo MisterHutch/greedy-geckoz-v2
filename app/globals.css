@@ -253,9 +253,9 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 /* Force cursor to always be on top and visible */
+/* Limit cursor inheritance without forcing global z-index resets */
 * {
   cursor: inherit !important;
-  z-index: auto;
 }
 
 body {

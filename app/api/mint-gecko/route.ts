@@ -1,5 +1,6 @@
 // API endpoint for full gecko minting with IPFS upload and NFT creation
 import { NextRequest, NextResponse } from 'next/server';
+export const runtime = 'nodejs';
 import { PinataService } from '@/lib/ipfs/pinata-service';
 
 // Rate limiting storage (in production, use Redis or database)

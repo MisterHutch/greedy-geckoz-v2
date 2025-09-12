@@ -90,7 +90,14 @@ export default function FullScreenPopup({
       {isOpen && (
         <motion.div
           className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${className}`}
-          style={variantStyles[variant]}
+          style={{
+            ...variantStyles[variant],
+            // Respect iOS safe areas for notches/home indicators
+            paddingTop: 'max(1rem, env(safe-area-inset-top))',
+            paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
+            paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+            paddingRight: 'max(1rem, env(safe-area-inset-right))'
+          }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

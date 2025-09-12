@@ -199,6 +199,11 @@ npm run test:mint
 
 ## 📦 Deployment
 
+### Vercel environment
+- Add `GECKO_LAYERS_PATH` only if you plan to composite images on the server with local layers. Otherwise, keep it unset and use IPFS-hosted assets.
+- API routes that need native modules run on Node (`export const runtime = 'nodejs'`).
+- Project uses `@napi-rs/canvas` for build compatibility on Vercel.
+
 ### Vercel (Recommended)
 ```bash
 # Build for production

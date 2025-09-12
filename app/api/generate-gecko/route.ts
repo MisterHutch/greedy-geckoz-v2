@@ -1,5 +1,6 @@
 // API endpoint for generating gecko without minting (for testing/preview)
 import { NextRequest, NextResponse } from 'next/server';
+export const runtime = 'nodejs';
 
 // Initialize services on first request
 let isInitialized = false;
