@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Header from '../components/Header'
 import EnhancedMintFlow from '../components/EnhancedMintFlow'
-import GeckoNotification from '../components/GeckoNotification'
+// Gecko notifications are rendered inside EnhancedMintFlow; no need to duplicate here
 
 export default function MintPage() {
   const [lotteryInfo, setLotteryInfo] = useState({
@@ -15,7 +15,6 @@ export default function MintPage() {
   return (
     <div className="min-h-screen psychedelic-gradient-hero">
       <Header />
-      <GeckoNotification />
       
       <main className="relative py-8">
         {/* Overlay for readability */}
