@@ -4,7 +4,7 @@
 interface LogEntry {
   timestamp: string
   level: 'info' | 'warn' | 'error' | 'debug'
-  category: 'mint' | 'wallet' | 'deployment' | 'api' | 'ui'
+  category: 'mint' | 'wallet' | 'deployment' | 'api' | 'ui' | 'system'
   message: string
   details?: any
   userId?: string
