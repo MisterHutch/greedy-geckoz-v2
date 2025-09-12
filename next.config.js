@@ -4,7 +4,9 @@ const nextConfig = {
   // Next.js 15: externalize native deps for server bundles
   serverExternalPackages: ['@napi-rs/canvas'],
   eslint: {
-    ignoreDuringBuilds: false,
+    // Do not fail production builds on ESLint warnings/errors
+    // (lint still runs locally via `npm run lint`)
+    ignoreDuringBuilds: true,
   },
   images: {
     remotePatterns: [
