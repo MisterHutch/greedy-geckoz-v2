@@ -92,10 +92,12 @@ export class GeckoOwnershipVerifier {
           } else if (isNft(nft) || isSft(nft)) {
             fullNft = nft;
           } else {
-            // As a fallback, attempt load by mint address if available
+            // As a fallback, attempt to fetch by mint address if available
             const maybeMint = (nft as any)?.mintAddress ?? (nft as any)?.address;
             if (maybeMint) {
-              fullNft = await this.metaplex.nfts().load({ mintAddress: maybeMint });
+              fullNft = await this.metaplex
+                .nfts()
+                .findByMint({ mintAddress: new PublicKey(maybeMint) });
             } else {
               continue;
             }
