@@ -30,6 +30,12 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   webpack: (config, { isServer }) => {
+    // Avoid bundling optional prettifier for pino
+    config.resolve = config.resolve || {}
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      'pino-pretty': false,
+    }
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
