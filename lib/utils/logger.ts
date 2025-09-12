@@ -27,7 +27,12 @@ interface MintFailureDetails {
   solBalance?: number
   mintQuantity?: number
   attemptNumber?: number
+  // Correlation and telemetry fields
+  attemptId?: string
   timeElapsed?: number
+  timestamp?: string
+  sessionId?: string
+  environment?: 'production' | 'development' | 'preview'
 }
 
 interface WalletIssueDetails {
