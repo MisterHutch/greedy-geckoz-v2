@@ -107,7 +107,15 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const existingHashes = geckoDatabase.getExistingHashes();
+    // Use disabled services for build compatibility (same as GET)
+    const { disabledGeckoGenerator: liveGeckoGenerator } = await import('@/lib/services/DisabledGeckoGenerator');
+    const geckoDatabase = {
+      getExistingHashes: (): Set<string> => new Set<string>(),
+      getNextGeckoId: () => 1,
+      getStats: () => ({ totalMinted: 0 })
+    };
+
+    const existingHashes: Set<string> = geckoDatabase.getExistingHashes();
     const geckos = [];
 
     for (let i = 0; i < count; i++) {
