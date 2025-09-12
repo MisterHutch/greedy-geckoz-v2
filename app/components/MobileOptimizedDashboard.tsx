@@ -45,7 +45,7 @@ export default function MobileOptimizedDashboard() {
       <Header />
       
       {/* Loading/Scanning Overlay */}
-      <FullScreenPopup isVisible={isScanning} onClose={() => {}}>
+      <FullScreenPopup isOpen={isScanning} onClose={() => {}}>
         <div className="text-center">
           {/* Responsive loading spinner */}
           <div className="mb-6 sm:mb-8">
