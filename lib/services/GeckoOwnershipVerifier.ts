@@ -2,7 +2,7 @@
 // Gates access to Portfolio Tracker and Fluid Dynamics pages
 
 import { Connection, PublicKey } from '@solana/web3.js';
-import { Metaplex } from '@metaplex-foundation/js';
+import { Metaplex, isMetadata, isNft, isSft } from '@metaplex-foundation/js';
 
 export interface GeckoNFT {
   mintAddress: string;
@@ -85,8 +85,21 @@ export class GeckoOwnershipVerifier {
       
       for (const nft of nfts) {
         try {
-          // Load full NFT metadata
-          const fullNft = await this.metaplex.nfts().load({ metadata: nft });
+          // Load or normalize to a full NFT/SFT model depending on type
+          let fullNft: any;
+          if (isMetadata(nft)) {
+            fullNft = await this.metaplex.nfts().load({ metadata: nft });
+          } else if (isNft(nft) || isSft(nft)) {
+            fullNft = nft;
+          } else {
+            // As a fallback, attempt load by mint address if available
+            const maybeMint = (nft as any)?.mintAddress ?? (nft as any)?.address;
+            if (maybeMint) {
+              fullNft = await this.metaplex.nfts().load({ mintAddress: maybeMint });
+            } else {
+              continue;
+            }
+          }
           
           if (this.isGeckoNFT(fullNft)) {
             console.log(`🦎 Found gecko: ${fullNft.name}`);
