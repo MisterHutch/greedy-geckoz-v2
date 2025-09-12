@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    // Allow native module to remain external in RSC/server builds
+    serverComponentsExternalPackages: ['@napi-rs/canvas'],
+  },
   eslint: {
     ignoreDuringBuilds: false,
   },
@@ -35,6 +39,12 @@ const nextConfig = {
         path: false,
         crypto: false,
         canvas: false,
+      }
+    } else {
+      // Prevent bundling native N-API binary; load at runtime instead
+      config.externals = config.externals || []
+      if (Array.isArray(config.externals)) {
+        config.externals.push('@napi-rs/canvas')
       }
     }
     return config
