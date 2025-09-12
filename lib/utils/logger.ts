@@ -43,6 +43,9 @@ interface WalletIssueDetails {
   networkStatus?: 'online' | 'offline' | 'slow'
   rpcEndpoint?: string
   retryCount?: number
+  // Enriched by logger
+  timestamp?: string
+  sessionId?: string
 }
 
 class Logger {
