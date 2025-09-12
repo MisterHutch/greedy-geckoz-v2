@@ -17,6 +17,7 @@ interface LogEntry {
 }
 
 interface MintFailureDetails {
+  [key: string]: any
   step: 'wallet_connect' | 'balance_check' | 'payment_tx' | 'nft_generation' | 'nft_mint' | 'confirmation'
   errorCode?: string
   errorMessage: string
