@@ -1,10 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  experimental: {
-    // Allow native module to remain external in RSC/server builds
-    serverComponentsExternalPackages: ['@napi-rs/canvas'],
-  },
+  // Next.js 15: externalize native deps for server bundles
+  serverExternalPackages: ['@napi-rs/canvas'],
   eslint: {
     ignoreDuringBuilds: false,
   },
