@@ -9,12 +9,24 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 // Initialize services
 let isInitialized = false;
 let pinataService: PinataService;
+// Lazily-loaded server-only services
+let liveGeckoGenerator: any;
+let geckoDatabase: any;
 
 async function initializeServices() {
   if (isInitialized) return;
   
   try {
     console.log('🔧 Initializing minting services...');
+    if (!liveGeckoGenerator || !geckoDatabase) {
+      const [{ liveGeckoGenerator: lg }, { geckoDatabase: db }] = await Promise.all([
+        import('@/lib/services/LiveGeckoGenerator'),
+        import('@/lib/services/GeckoDatabase')
+      ]);
+      liveGeckoGenerator = lg;
+      geckoDatabase = db;
+    }
+
     await Promise.all([
       liveGeckoGenerator.initialize(),
       geckoDatabase.initialize()
