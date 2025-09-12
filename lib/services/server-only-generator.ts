@@ -9,4 +9,5 @@ export async function createLiveGeckoGenerator() {
   return new LiveGeckoGenerator();
 }
 
-export type { GeckoData, GeckoTraits } from './LiveGeckoGenerator';
+// Re-export types compatible with the live generator
+export type { GeneratedGecko as GeckoData, GeckoTraits } from './LiveGeckoGenerator';
