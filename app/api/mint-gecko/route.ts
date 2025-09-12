@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import { PinataService } from '@/lib/ipfs/pinata-service';
+import type { MintedGecko } from '@/lib/services/GeckoDatabase';
 
 // Rate limiting storage (in production, use Redis or database)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
