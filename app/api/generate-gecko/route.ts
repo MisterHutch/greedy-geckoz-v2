@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     const { disabledGeckoGenerator: liveGeckoGenerator } = await import('@/lib/services/DisabledGeckoGenerator');
     // Temporarily disable database for build testing
     const geckoDatabase = {
-      getExistingHashes: () => new Set(),
+      getExistingHashes: (): Set<string> => new Set<string>(),
       getNextGeckoId: () => 1,
       getStats: () => ({ totalMinted: 0 })
     };
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     const includeImage = searchParams.get('includeImage') === 'true';
 
     // Get existing hashes for duplicate prevention
-    const existingHashes = geckoDatabase.getExistingHashes();
+    const existingHashes: Set<string> = geckoDatabase.getExistingHashes();
     const nextId = geckoDatabase.getNextGeckoId();
 
     // Generate unique gecko
