@@ -203,6 +203,18 @@ npm run test:mint
 - Add `GECKO_LAYERS_PATH` only if you plan to composite images on the server with local layers. Otherwise, keep it unset and use IPFS-hosted assets.
 - API routes that need native modules run on Node (`export const runtime = 'nodejs'`).
 - Project uses `@napi-rs/canvas` for build compatibility on Vercel.
+- Server RPC prefers `SOLANA_RPC_ENDPOINT`; client code can use `NEXT_PUBLIC_RPC_ENDPOINT`.
+
+### On‑chain Minting (devnet/mainnet)
+- Set envs:
+  - `SOLANA_RPC_ENDPOINT` — e.g., devnet or provider URL
+  - `MINT_AUTHORITY_SECRET` — JSON array keypair (funded on target cluster)
+  - `PINATA_API_KEY`, `PINATA_SECRET_API_KEY`
+  - Optional: `NEXT_PUBLIC_COLLECTION_NFT_ADDRESS`
+- Test mint locally:
+  - `GET /api/test-mint?wallet=<YOUR_DEVNET_WALLET>`
+  - Or `SITE_URL=http://localhost:3000 npm run test:mint -- <YOUR_DEVNET_WALLET>`
+- On-chain `uri` uses compact `ipfs://CID` to avoid Token Metadata length limits.
 
 ### Vercel (Recommended)
 ```bash
