@@ -49,62 +49,7 @@ export default function ImpossibleGecko({ mintStats }: ImpossibleGeckoProps) {
         `
       }}
     >
-      {/* Primary Reality Gecko */}
-      <motion.div
-        className="gecko-reality-prime"
-        style={{
-          position: 'absolute',
-          top: '20vh',
-          left: '50%',
-          width: '300px',
-          height: '300px',
-          transformOrigin: 'center center',
-          transform: `translateX(-50%) rotateX(${realityPhase}deg) scale(${1 + Math.sin(realityPhase) * 0.1})`,
-          zIndex: 10,
-          filter: `drop-shadow(0 0 ${30 + glitchIntensity * 20}px rgba(86, 236, 106, ${0.6 + glitchIntensity * 0.4}))`,
-          transition: 'all 0.1s ease-out'
-        }}
-      >
-        <div 
-          style={{
-            fontSize: '300px',
-            transform: 'rotate(-10deg)',
-            animation: 'gecko-blink 4s ease-in-out infinite'
-          }}
-        >
-          🦎
-        </div>
-      </motion.div>
-      
-      {/* Mirrored Reality Gecko */}
-      <motion.div
-        className="gecko-reality-mirror"
-        style={{
-          position: 'absolute',
-          top: '80vh',
-          left: '50%',
-          width: '300px',
-          height: '300px',
-          transformOrigin: 'center center',
-          transform: `translateX(-50%) rotateX(${180 + realityPhase}deg) rotateY(180deg) translateZ(-${200 + scrollY * 0.1}px)`,
-          opacity: 0.85 - glitchIntensity * 0.2,
-          filter: `
-            drop-shadow(0 0 30px rgba(255, 0, 110, 0.6))
-            hue-rotate(180deg)
-            brightness(0.9)
-          `
-        }}
-      >
-        <div 
-          style={{
-            fontSize: '300px',
-            transform: 'rotate(10deg)',
-            animation: 'gecko-blink 4s ease-in-out infinite 2s'
-          }}
-        >
-          🦎
-        </div>
-      </motion.div>
+      {/* Primary/Mirrored Geckos removed per request */}
       
       {/* Reality Glitch Effects */}
       <div 

@@ -19,29 +19,18 @@ export default function Home() {
   const notifications = useGeckoNotifications()
   
   const [mintStats, setMintStats] = useState({
-    totalMinted: 1453,
+    totalMinted: 0,
     totalSupply: 2222,
     lotteryWinnersCount: 0,
     lotteryWinnersRemaining: 5,
-    lotteryPool: 0.93,
-    availableGeckoz: 769
+    lotteryPool: 0,
+    availableGeckoz: 2222
   })
 
   useEffect(() => {
-    // Initialize Paradox Scroll Controller
+    // Initialize Paradox Scroll Controller only
     const paradoxScrollMaster = new ParadoxScrollMaster()
-    
-    // Simulate real-time mint updates
-    const timer = setInterval(() => {
-      setMintStats(prev => ({
-        ...prev,
-        totalMinted: Math.min(prev.totalSupply, prev.totalMinted + Math.floor(Math.random() * 3)),
-        availableGeckoz: Math.max(0, prev.availableGeckoz - Math.floor(Math.random() * 2))
-      }))
-    }, 45000) // Update every 45 seconds
-
     return () => {
-      clearInterval(timer)
       paradoxScrollMaster.destroy()
     }
   }, [])

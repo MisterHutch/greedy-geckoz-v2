@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import GeckoNotification, { useGeckoNotifications } from '../components/GeckoNotification'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { Wallet, TrendingUp, TrendingDown, DollarSign, Calendar, RefreshCw, Eye, EyeOff, BarChart3, Activity, Loader2 } from 'lucide-react'
 import Header from '../components/Header'
@@ -45,18 +46,21 @@ export default function Dashboard() {
   const [scanProgress, setScanProgress] = useState('')
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [walletStats, setWalletStats] = useState<WalletStats | null>(null)
-  const [selectedPeriod, setSelectedPeriod] = useState('1m')
+  const [selectedPeriod, setSelectedPeriod] = useState('6h')
+  const notifications = useGeckoNotifications()
   const [showBalance, setShowBalance] = useState(false)
   const [chartData, setChartData] = useState<DataPoint[]>([])
 
   const periods = [
-    { value: '1d', label: '24H', days: 1 },
+    { value: '1h', label: '1H', minutes: 60 },
+    { value: '6h', label: '6H', minutes: 360 },
+    { value: '12h', label: '12H', hours: 12 },
+    { value: '24h', label: '24H', hours: 24 },
+    { value: '48h', label: '48H', hours: 48 },
     { value: '1w', label: '1W', days: 7 },
     { value: '1m', label: '1M', days: 30 },
-    { value: '6m', label: '6M', days: 180 },
-    { value: '12m', label: '1Y', days: 365 },
-    { value: '24m', label: '2Y', days: 730 },
-    { value: '36m', label: '3Y', days: 1095 },
+    { value: '1y', label: '1Y', days: 365 },
+    { value: 'lt', label: 'LT', days: 3650 },
   ]
 
   // Load data when wallet connects
@@ -125,13 +129,14 @@ export default function Dashboard() {
     
     try {
       const walletAddress = publicKey.toString()
-      const periodConfig = periods.find(p => p.value === period) || periods[2]
+      const periodConfig = periods.find(p => p.value === period) || periods[1]
       
       setScanProgress('Connecting to blockchain...')
       await new Promise(resolve => setTimeout(resolve, 800)) // UX delay
       
       setScanProgress('Scanning transaction history...')
-      const walletData = await solscanAPI.calculateWalletPnL(walletAddress, periodConfig.days)
+      const days = (periodConfig as any).days || ((periodConfig as any).hours || ((periodConfig as any).minutes || 0) / 60) / 24
+      const walletData = await solscanAPI.calculateWalletPnL(walletAddress, days)
       
       setScanProgress('Processing transaction data...')
       await new Promise(resolve => setTimeout(resolve, 600))
@@ -176,6 +181,17 @@ export default function Dashboard() {
       setIsScanning(false)
       setLoading(false)
     }
+  }
+
+  const handlePeriodChange = (period: string) => {
+    if (['1w', '1m', '1y', 'lt'].includes(period)) {
+      notifications.addNotification(
+        'info',
+        'Deep Sync Requested',
+        'Fetching 1W+ of activity may take longer depending on your transaction count.'
+      )
+    }
+    setSelectedPeriod(period)
   }
 
   // Generate chart data from real transactions
@@ -287,6 +303,10 @@ export default function Dashboard() {
   return (
     <GatedAccess>
       <div className="min-h-screen psychedelic-gradient-hero fly-cursor">
+        <GeckoNotification 
+          notifications={notifications.notifications} 
+          onDismiss={notifications.removeNotification} 
+        />
         <Header />
       
       {/* Wallet Scanning Full-Screen Popup */}
