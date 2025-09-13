@@ -260,8 +260,15 @@ export default function Dashboard() {
     setChartData(points)
   }
 
-  // Update chart data when period changes
+  // Update chart data when period changes (with deep-sync notice)
   const handlePeriodChange = (period: string) => {
+    if (['1w', '1m', '1y', 'lt'].includes(period)) {
+      notifications.addNotification(
+        'info',
+        'Deep Sync Requested',
+        'Fetching 1W+ of activity may take longer depending on your transaction count.'
+      )
+    }
     setSelectedPeriod(period)
     if (connected && publicKey) {
       loadWalletData(period)
