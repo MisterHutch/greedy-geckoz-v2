@@ -1,19 +1,12 @@
 import type { Metadata } from 'next'
-import { JetBrains_Mono, Inter } from 'next/font/google'
 import './globals.css'
 import '@solana/wallet-adapter-react-ui/styles.css'
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-terminal',
-  weight: ['400', '700']
-})
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-body',
-  weight: ['400', '500', '600', '700']
-})
+// Fallback font variables for when Google Fonts are unavailable
+const fontVariables = {
+  '--font-terminal': 'Monaco, Consolas, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace',
+  '--font-body': 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'
+} as React.CSSProperties
 
 export const metadata: Metadata = {
   title: 'Greedy Geckoz ∞ | Degen Paradise Where Lambos Go to Die',
@@ -63,7 +56,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${jetbrainsMono.variable} ${inter.variable}`}>
+    <html lang="en" style={fontVariables}>
       <head>
         <meta name="theme-color" content="#00ff88" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
