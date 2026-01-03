@@ -183,17 +183,6 @@ export default function Dashboard() {
     }
   }
 
-  const handlePeriodChange = (period: string) => {
-    if (['1w', '1m', '1y', 'lt'].includes(period)) {
-      notifications.addNotification(
-        'info',
-        'Deep Sync Requested',
-        'Fetching 1W+ of activity may take longer depending on your transaction count.'
-      )
-    }
-    setSelectedPeriod(period)
-  }
-
   // Generate chart data from real transactions
   const generateChartDataFromTransactions = (txs: any[], days: number) => {
     const points: DataPoint[] = []
