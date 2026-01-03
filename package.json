@@ -16,6 +16,7 @@
   "dependencies": {
     "@metaplex-foundation/js": "^0.20.1",
     "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
+    "@napi-rs/canvas": "^0.1.58",
     "@solana/spl-token": "^0.4.13",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-react": "^0.15.35",
@@ -25,10 +26,9 @@
     "@vercel/analytics": "^1.5.0",
     "autoprefixer": "^10.4.16",
     "axios": "^1.6.2",
-    "@napi-rs/canvas": "^0.1.58",
     "framer-motion": "12.23.12",
     "lucide-react": "^0.539.0",
-    "next": "^15.4.6",
+    "next": "^15.4.10",
     "react": "19.1.1",
     "react-dom": "19.1.1",
     "react-hot-toast": "^2.4.1",
@@ -39,7 +39,7 @@
     "@types/react": "19.1.9",
     "dotenv": "17.2.1",
     "eslint": "^9.33.0",
-    "eslint-config-next": "^15.4.6",
+    "eslint-config-next": "^15.4.10",
     "form-data": "^4.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
