@@ -24,7 +24,7 @@
     "@solana/web3.js": "^1.98.4",
     "@vercel/analytics": "^1.5.0",
     "autoprefixer": "^10.4.16",
-    "axios": "^1.6.2",
+    "axios": "^1.14.0",
     "@napi-rs/canvas": "^0.1.58",
     "framer-motion": "12.23.12",
     "lucide-react": "^0.539.0",
@@ -40,7 +40,7 @@
     "dotenv": "17.2.1",
     "eslint": "^9.33.0",
     "eslint-config-next": "^15.4.6",
-    "form-data": "^4.0.0",
+    "form-data": "^4.0.5",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
@@ -54,5 +54,14 @@
     "refresh"
   ],
   "author": "Degen Developers",
-  "license": "MIT"
+  "license": "MIT",
+  "overrides": {
+    "lodash": "4.18.1",
+    "bn.js": "5.2.3",
+    "elliptic": "6.6.1",
+    "aptos": {
+      "axios": "1.14.0",
+      "form-data": "4.0.5"
+    }
+  }
 }
