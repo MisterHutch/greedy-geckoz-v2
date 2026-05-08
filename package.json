@@ -24,7 +24,7 @@
     "@solana/web3.js": "^1.98.4",
     "@vercel/analytics": "^1.5.0",
     "autoprefixer": "^10.4.16",
-    "axios": "^1.14.0",
+    "axios": "^1.15.2",
     "@napi-rs/canvas": "^0.1.58",
     "framer-motion": "12.23.12",
     "lucide-react": "^0.539.0",
